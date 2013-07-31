@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <EditText
+            android:id="@+id/editExperimentName"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:hint="@string/cases_tab_hint_experiment_name"
+            />
+    <EditText
+            android:id="@+id/editGroupName"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_below="@id/editExperimentName"
+            android:hint="@string/cases_tab_hint_group_name"
+            />
+    <Button
+            android:id="@+id/buttonTrackStart"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/cases_tab_button_track_experiment_start"
+            android:layout_below="@id/editGroupName"
+            />
+
+    <Button
+            android:id="@+id/buttonTrackEnd"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/cases_tab_button_track_experiment_end"
+            android:layout_below="@id/editGroupName"
+            android:layout_toRightOf="@id/buttonTrackStart"
+            />
+    <View
+            android:id="@+id/abDelimiter"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_below="@id/buttonTrackEnd"
+            />
+
+    <Button
+            android:id="@+id/buttonTrackPayment"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/cases_tab_button_track_payment"
+            android:layout_below="@id/abDelimiter"
+            />
+
+</RelativeLayout>
