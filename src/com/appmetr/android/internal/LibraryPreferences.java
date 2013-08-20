@@ -68,14 +68,14 @@ public class LibraryPreferences {
      */
     public static final int DEFAULT_REMOTE_COMMAND_TIME = 70000;
 
-    protected static final String BATCH_ID_KEY = "AppMetrBatchID";
-    protected static final String FILE_INDEX_PROP_NAME = "AppMetr-LastFileIndex";
+    protected static final String BATCH_ID_KEY = "AppMetr-BatchID";
+    protected static final String FILE_INDEX_PROP_NAME = "AppMetr-FileIndex";
     protected static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
-    protected static final String INSTALL_URL_PROP_NAME = "AppMetr-isInstallURL-tracked";
-    protected static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSession-Sent";
-    protected static final String PROCESSED_COMMAND_LIST_PROP_NAME = "AppMetr-Processed-Command-List";
-    protected static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommands-On-Resume";
-    protected static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessed-CommandID";
+    protected static final String INSTALL_URL_PROP_NAME = "AppMetr-InstallURLTracked";
+    protected static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSessionSent";
+    protected static final String PROCESSED_COMMAND_LIST_PROP_NAME = "AppMetr-ProcessedCommandList";
+    protected static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
+    protected static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
 
     /**
      * An application shred preferences
