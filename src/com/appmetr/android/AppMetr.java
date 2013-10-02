@@ -431,6 +431,22 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
+     * Identify user
+     *
+     * @param userId - user id
+     */
+    public static void identify(String userId) {
+        try {
+            JSONObject action = new JSONObject().put("action", "identify");
+            action.put("userId", userId);
+
+            getInstance().track(action);
+        } catch (JSONException error) {
+            Log.e(TAG, "Identify failed", error);
+        }
+    }
+
+    /**
      * Force flush events on server. Flushing execute in new thread
      */
     public static void flush() {
