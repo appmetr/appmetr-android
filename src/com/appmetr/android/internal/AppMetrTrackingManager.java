@@ -35,14 +35,11 @@ import java.util.zip.DataFormatException;
 public class AppMetrTrackingManager {
     private final static String TAG = "AppMetrTrackingManager";
 
-    protected static boolean mTrackAppStart = true;
-
     protected String mToken = null;
     protected final RequestParameters mRequestParameters;
     protected final String mUserID;
     protected String mWebServiceCustomUrl;
     protected WebServiceRequest mWebServiceRequest;
-    protected boolean mTrackSessionByApp = true;
     protected boolean mTrackInstallByApp = true;
 
     protected int mCacheInterval = 0;
@@ -116,10 +113,6 @@ public class AppMetrTrackingManager {
             if (appInfo != null && appInfo.metaData != null) {
                 if (appInfo.metaData.containsKey("appmetrUrl")) {
                     mWebServiceCustomUrl = appInfo.metaData.getString("appmetrUrl");
-                }
-
-                if (appInfo.metaData.containsKey("trackSessionByApp")) {
-                    mTrackSessionByApp = appInfo.metaData.getBoolean("trackSessionByApp");
                 }
 
                 if (appInfo.metaData.containsKey("trackInstallByApp")) {
@@ -317,7 +310,7 @@ public class AppMetrTrackingManager {
     }
 
     protected void trackAppStart() {
-        if (!mTrackSessionByApp || !mTrackInstallByApp) {
+        if (!mTrackInstallByApp) {
             trackAppStartImpl();
 //            Commented cause need to execute AppStart in main thread
 //            mThreadExecutor.execute(new Runnable()
@@ -335,35 +328,12 @@ public class AppMetrTrackingManager {
     }
 
     protected void trackAppStartImpl() {
-        if (!mTrackAppStart) {
-            Date currentTime = new Date();
-            long elapsedTime;
-            synchronized (mPauseDate) {
-                elapsedTime = currentTime.getTime() - mPauseDate.getTime();
-            }
-
-            if (elapsedTime >= LibraryPreferences.TRACK_APPLICATION_DELAY) {
-                mTrackAppStart = true;
+        if (mPreferences.isFirstTimeRunning()) {
+            if (!mTrackInstallByApp) {
+                // add installation event
+                trackInstallBroadcast();
             }
         }
-
-        if (mTrackAppStart) {
-            // is the application first time running?
-            if (mPreferences.isFirstTimeRunning()) {
-                if (!mTrackInstallByApp) {
-                    // add installation event
-                    trackInstallBroadcast();
-                }
-            } else {
-                if (!mTrackSessionByApp) {
-                    // add session event
-                    trackSessionImpl(null);
-                    // force upload
-                    flushAndUploadAllEventsAsync();
-                }
-            }
-        }
-        mTrackAppStart = false;
     }
 
     /**

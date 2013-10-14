@@ -13,7 +13,6 @@
 
     <application android:label="@string/app_name">
         <meta-data android:name="appmetrUrl" android:value="http://appmetr.com/api"/>
-        <meta-data android:name="trackSessionByApp" android:value="true"/>
         <meta-data android:name="trackInstallByApp" android:value="true"/>
 
         <activity android:name=".DemoActivity"
