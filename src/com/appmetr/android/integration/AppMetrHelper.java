@@ -24,6 +24,50 @@ public class AppMetrHelper {
     }
 
     /**
+     * Method for tracking game event as "track session" with parameters
+     */
+    public static void trackSession(String serializedProperties) {
+        try {
+            AppMetr.trackSession(new JSONObject(serializedProperties));
+        } catch (final Throwable error) {
+            Log.e(TAG, "trackSession failed", error);
+        }
+    }
+
+    /**
+     * Method for tracking game event as "track level" without parameters
+     */
+    public static void trackLevel(int level) {
+        try {
+            AppMetr.trackLevel(level);
+        } catch (final Throwable error) {
+            Log.e(TAG, "trackLevel failed", error);
+        }
+    }
+
+    /**
+     * Method for tracking game event as "track level" with parameters
+     */
+    public static void trackLevel(int level, String serializedProperties) {
+        try {
+            AppMetr.trackLevel(level, new JSONObject(serializedProperties));
+        } catch (final Throwable error) {
+            Log.e(TAG, "trackLevel failed", error);
+        }
+    }
+
+    /**
+     * Methods for tracking game event as "attach properties"
+     */
+    public static void attachProperties() {
+        try {
+            AppMetr.attachProperties();
+        } catch (final Throwable error) {
+            Log.e(TAG, "attachProperties failed", error);
+        }
+    }
+
+    /**
      * Methods for tracking game event as "attach properties"
      *
      * @param serializedProperties - a String that contains JSON object
@@ -111,7 +155,7 @@ public class AppMetrHelper {
     /**
      * Method for tracking options with error
      */
-    public static void trackOptions(String commandId, String serializedOptions, String errorCode, String errorMessage) {
+    public static void trackOptionsError(String commandId, String serializedOptions, String errorCode, String errorMessage) {
         try {
             AppMetr.trackOptionsError(commandId, new JSONArray(serializedOptions), errorCode, errorMessage);
         } catch (final Throwable error) {
@@ -120,14 +164,35 @@ public class AppMetrHelper {
     }
 
     /**
-     * Sets whether a sandbox mode enabled or not
-     *
-     * @param enabled On/off a sandbox mode
-     * @since 1.4
-     * @deprecated in 1.5
+     * Method for tracking experiment start
      */
-    @Deprecated
-    public static void setSandboxModeEnabled(boolean enabled) {
-        // nothing to do
+    public static void trackExperimentStart(String experiment, String group) {
+        try {
+            AppMetr.trackExperimentStart(experiment, group);
+        } catch (final Throwable error) {
+            Log.e(TAG, "trackExperiment failed", error);
+        }
+    }
+
+    /**
+     * Method for tracking end
+     */
+    public static void trackExperimentEnd(String experiment) {
+        try {
+            AppMetr.trackExperimentEnd(experiment);
+        } catch (final Throwable error) {
+            Log.e(TAG, "trackExperiment failed", error);
+        }
+    }
+
+    /**
+     * Method for identify
+     */
+    public static void identify(String userId) {
+        try {
+            AppMetr.identify(userId);
+        } catch (final Throwable error) {
+            Log.e(TAG, "identify failed", error);
+        }
     }
 }

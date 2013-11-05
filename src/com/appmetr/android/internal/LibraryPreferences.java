@@ -48,12 +48,6 @@ public class LibraryPreferences {
     public static final String MD5_SALT = "frADufaQaYE4rep";
 
     /**
-     * The delay in milliseconds, used for track app method when app comes from
-     * background mode
-     */
-    public static final long TRACK_APPLICATION_DELAY = 15 * 60 * 1000; // 15minute * 60sec * 1000mlsec
-
-    /**
      * The maximum time in seconds to wait before shutdown ThreadPoolExecutor
      */
     public static final int THREAD_POOL_TERMINATION_TIMEOUT_IN_SEC = 5; // 5 seconds
@@ -61,7 +55,7 @@ public class LibraryPreferences {
     /**
      * The version string of AppMetrAndroid library
      */
-    public static final String VERSION_STRING = "1.6.4";
+    public static final String VERSION_STRING = "1.6.5";
 
     /**
      * Time in milliseconds to query remote commands
