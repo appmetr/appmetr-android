@@ -114,10 +114,8 @@ public class CustomTabActivity extends AbstractTabActivity {
                 } else if ("attachProperties".equals(actionType)) {
                     JSONObject properties = getProperties();
 
-                    if (properties != null) {
-                        AppMetr.attachProperties(getProperties());
-                        logMessage("Properties attached");
-                    }
+                    AppMetr.attachProperties(properties);
+                    logMessage("Properties attached");
                 }
             }
         });

@@ -52,5 +52,15 @@
             android:text="@string/cases_tab_button_track_payment"
             android:layout_below="@id/abDelimiter"
             />
+    <EditText
+            android:id="@+id/editPaymentUSD"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_marginTop="4dp"
+            android:layout_below="@id/abDelimiter"
+            android:layout_toRightOf="@id/buttonTrackPayment"
+            android:hint="@string/cases_tab_hint_payment_usd"
+            />
 
 </RelativeLayout>

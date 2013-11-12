@@ -4,20 +4,17 @@
  */
 package com.appmetr.android.internal;
 
-import android.net.http.AndroidHttpClient;
 import android.util.Log;
 import com.appmetr.android.BuildConfig;
 import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -45,38 +42,37 @@ public class WebServiceRequest {
      * @return - "true" if server response equal to kPositiveServerResponse.
      *         Else returns "false".
      */
-    public boolean sendRequest(List<NameValuePair> parameters, byte[] batches) {
-        AndroidHttpClient httpclient = AndroidHttpClient.newInstance("AppMetr for Android");
-        String urlPath = getUrlPath(parameters);
-        HttpPost httppost = new HttpPost(urlPath);
+    public boolean sendRequest(List<NameValuePair> parameters, byte[] batches) throws IOException {
+        URL url = new URL(getUrlPath(parameters));
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         try {
-            httppost.setHeader("Content-Type", "application/octet-stream");
-
             // Add body data
-            byte[] fixedBatch = new byte[batches.length + 1];
-            System.arraycopy(batches, 0, fixedBatch, 0, batches.length);
-            fixedBatch[batches.length] = 0;
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/octet-stream");
 
-            ByteArrayEntity entity = new ByteArrayEntity(fixedBatch);
-            entity.setContentType("application/octet-stream");
-
-            httppost.setEntity(entity);
+            connection.setFixedLengthStreamingMode(batches.length);
+            OutputStream out = connection.getOutputStream();
+            out.write(batches);
+            out.close();
 
             // Execute HTTP Post Request
-            HttpResponse response = httpclient.execute(httppost);
-            BufferedReader input = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-            String inputLine, result = "";
-            while ((inputLine = input.readLine()) != null) {
-                result += inputLine;
+            BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder result = new StringBuilder();
+            try {
+                String inputLine;
+                while ((inputLine = input.readLine()) != null) {
+                    result.append(inputLine);
+                }
+            } finally {
+                input.close();
             }
-            input.close();
 
             try {
-                String status = new JSONObject(result).getJSONObject("response").getString("status");
+                String status = new JSONObject(result.toString()).getJSONObject("response").getString("status");
                 if (status != null && status.compareTo("OK") == 0) {
-                    httpclient.close();
                     return true;
                 }
             } catch (JSONException jsonError) {
@@ -94,9 +90,10 @@ public class WebServiceRequest {
                                 + " For the app to have access to the network the uses permission \"android.permission.INTERNET\" "
                                 + "must be set. You can find a detailed description here: http://developer.android.com/reference/android/Manifest.permission.html#INTERNET");
             }
+        } finally {
+            connection.disconnect();
         }
 
-        httpclient.close();
         return false;
     }
 

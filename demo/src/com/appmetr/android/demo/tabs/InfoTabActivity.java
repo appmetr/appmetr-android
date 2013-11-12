@@ -16,7 +16,6 @@ public class InfoTabActivity extends AbstractTabActivity {
         setContentView(R.layout.info);
 
         String customUrl = "";
-        Boolean trackSessionByApp = true;
         Boolean trackInstallByApp = true;
         try {
             ApplicationInfo appInfo = this.getPackageManager().getApplicationInfo(this.getPackageName(), PackageManager.GET_META_DATA);
@@ -24,10 +23,6 @@ public class InfoTabActivity extends AbstractTabActivity {
             if (appInfo != null && appInfo.metaData != null) {
                 if (appInfo.metaData.containsKey("appmetrUrl")) {
                     customUrl = appInfo.metaData.getString("appmetrUrl");
-                }
-
-                if (appInfo.metaData.containsKey("trackSessionByApp")) {
-                    trackSessionByApp = appInfo.metaData.getBoolean("trackSessionByApp");
                 }
 
                 if (appInfo.metaData.containsKey("trackInstallByApp")) {
@@ -39,10 +34,9 @@ public class InfoTabActivity extends AbstractTabActivity {
         }
 
         String separator = getString(R.string.info_tab_prop_separator);
-        ((TextView) findViewById(R.id.userIdLabel)).setText(getString(R.string.info_tab_user_id) + separator + AppMetr.getUserId());
+        ((TextView) findViewById(R.id.userIdLabel)).setText(getString(R.string.info_tab_user_id) + separator + AppMetr.getInstanceIdentifier());
         ((TextView) findViewById(R.id.urlLabel)).setText(getString(R.string.info_tab_url) + separator + customUrl);
         ((TextView) findViewById(R.id.tokenLabel)).setText(getString(R.string.info_tab_token) + separator + getParentActivity().getToken());
-        ((TextView) findViewById(R.id.trackSessionLabel)).setText(getString(R.string.info_tab_track_session) + separator + trackSessionByApp.toString());
         ((TextView) findViewById(R.id.trackInstallLabel)).setText(getString(R.string.info_tab_track_install) + separator + trackInstallByApp.toString());
     }
 }

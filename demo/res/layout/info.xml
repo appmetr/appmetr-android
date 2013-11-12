@@ -27,13 +27,6 @@
             />
 
     <TextView
-            android:id="@+id/trackSessionLabel"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/info_tab_track_session"
-            />
-
-    <TextView
             android:id="@+id/trackInstallLabel"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

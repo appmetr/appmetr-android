@@ -54,15 +54,18 @@ public class CasesTabActivity extends AbstractTabActivity {
         Button buttonTrackPayment = (Button) findViewById(R.id.buttonTrackPayment);
         buttonTrackPayment.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
+                EditText editPaymentUSD = (EditText) findViewById(R.id.editPaymentUSD);
+                Double usdAmount = Double.valueOf(editPaymentUSD.getText().toString());
+
                 JSONObject payment = new JSONObject();
                 try {
                     payment.put("psUserSpentCurrencyCode", "USD");
-                    payment.put("psUserSpentCurrencyAmount", 2);
+                    payment.put("psUserSpentCurrencyAmount", usdAmount);
                     payment.put("orderId", "test.payment");
                     payment.put("processor", "google_checkout");
                     payment.put("transactionId", UUID.randomUUID().toString());
                     payment.put("appCurrencyCode", "coins");
-                    payment.put("appCurrencyAmount", 10);
+                    payment.put("appCurrencyAmount", usdAmount * 5);
 
                     AppMetr.trackPayment(payment);
                     logMessage("Payment tracked");

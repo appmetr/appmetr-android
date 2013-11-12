@@ -21,10 +21,11 @@
     <!-- Cases tab -->
     <string name="cases_tab_hint_experiment_name">Experiment name</string>
     <string name="cases_tab_hint_group_name">Group name</string>
+    <string name="cases_tab_hint_payment_usd">USD</string>
 
     <string name="cases_tab_button_track_experiment_start">Track start</string>
     <string name="cases_tab_button_track_experiment_end">Track end</string>
-    <string name="cases_tab_button_track_payment">Track payment 1 USD</string>
+    <string name="cases_tab_button_track_payment">Track payment</string>
 
     <!-- Custom tab -->
     <string name="custom_tab_button_add_property">Add</string>
