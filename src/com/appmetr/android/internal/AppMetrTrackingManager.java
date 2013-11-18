@@ -65,6 +65,7 @@ public class AppMetrTrackingManager {
 
     protected final static String METHOD_TRACK = "server.track";
     protected final static String METHOD_GET_COMMANDS = "server.getCommands";
+    protected final static String METHOD_VERIFY_PAYMENT = "server.verifyPayment";
 
     protected CommandsManager mCommandsManager;
 
@@ -642,5 +643,29 @@ public class AppMetrTrackingManager {
      */
     public CommandsManager getCommandsManager() {
         return mCommandsManager;
+    }
+
+    protected boolean verifyPaymentAndCheck(String purchaseInfo, String receipt, String privateKey) {
+        try {
+            String salt = Utils.md5("123567890:" + System.currentTimeMillis());
+
+            List<NameValuePair> parameters = getRequestParameters(METHOD_VERIFY_PAYMENT);
+            parameters.add((new BasicNameValuePair("purchase", purchaseInfo)));
+            parameters.add((new BasicNameValuePair("receipt", receipt)));
+            parameters.add((new BasicNameValuePair("salt", salt)));
+
+            JSONObject response = mWebServiceRequest.sendRequest(parameters);
+
+            boolean ret = response.getString("status").compareTo("valid") == 0;
+            if (ret) {
+                JSONObject purchase = new JSONObject(purchaseInfo);
+                String purchaseToken = purchase.getString("purchaseToken");
+                ret = response.getString("sig").equals(Utils.md5(purchaseToken + ":" + salt + ":" + privateKey));
+            }
+            return ret;
+        } catch (final Throwable t) {
+            Log.e(TAG, "Failed to validate payment", t);
+            return false;
+        }
     }
 }

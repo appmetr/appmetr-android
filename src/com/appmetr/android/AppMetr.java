@@ -447,6 +447,18 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
+     * Verify payment
+     *
+     * @param purchaseInfo - getOriginalJson().toString() for Purchase object
+     * @param signature - getSignature() for Purchase object
+     * @param privateKey - set in deploy setting on appmetr server
+     * @return true - if payment is valid, and false otherwise
+     */
+    public static boolean verifyPayment(String purchaseInfo, String signature, String privateKey) {
+        return getInstance().verifyPaymentAndCheck(purchaseInfo, signature, privateKey);
+    }
+
+    /**
      * Force flush events on server. Flushing execute in new thread
      */
     public static void flush() {
