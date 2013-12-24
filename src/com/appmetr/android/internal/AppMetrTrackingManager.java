@@ -52,13 +52,15 @@ public class AppMetrTrackingManager {
 
     protected Timer mTimer;
 
-    protected ArrayList<JSONObject> mEventList = new ArrayList<JSONObject>();
-    protected ArrayList<String> mFileList = new ArrayList<String>();
+    protected Lock mStartLock = new ReentrantLock();
+    protected Boolean mStarted = false;
+    protected Long mStartTime;
+
+    protected final ArrayList<JSONObject> mEventList = new ArrayList<JSONObject>();
+    protected final ArrayList<String> mFileList;
 
     protected Lock mFileWritterLock = new ReentrantLock();
     protected StringFileWriter mCurrentFileWriter;
-
-    protected final Date mPauseDate = new Date();
 
     private final Lock mFlushCacheLock = new ReentrantLock();
     private final Lock mUploadCacheLock = new ReentrantLock();
@@ -198,12 +200,16 @@ public class AppMetrTrackingManager {
 
         mToken = token;
 
-        initThreadExecutor();
-        if (mTimer == null) {
+        mStartLock.lock();
+        if (!mStarted) {
+            initThreadExecutor();
             createTimers();
-        }
+            trackAppStart();
 
-        trackAppStart();
+            mStartTime = new Date().getTime();
+            mStarted = true;
+        }
+        mStartLock.unlock();
     }
 
     /**
@@ -216,13 +222,16 @@ public class AppMetrTrackingManager {
                 mTimer = null;
             }
 
+            mStartLock.lock();
+
+            mPreferences.setSessionDuration(mPreferences.getSessionDuration() + (new Date().getTime() - mStartTime));
+
             unloadLibrary();
             flushDataImpl();
             closeCurrentFileWritter();
 
-            synchronized (mPauseDate) {
-                mPauseDate.setTime(new Date().getTime());
-            }
+            mStarted = false;
+            mStartLock.unlock();
         } catch (final Throwable t) {
             Log.e(TAG, "sleepLibrary failed", t);
         }
@@ -232,11 +241,16 @@ public class AppMetrTrackingManager {
      * Methods which must be called when applications exits background mode
      */
     protected void restoreLibrary() {
-        if (mToken != null) {
+        mStartLock.lock();
+        if (mToken != null && !mStarted) {
             initThreadExecutor();
             createTimers();
             trackAppStart();
+
+            mStartTime = new Date().getTime();
+            mStarted = true;
         }
+        mStartLock.unlock();
     }
 
     /**
@@ -281,12 +295,18 @@ public class AppMetrTrackingManager {
     protected void trackSessionImpl(JSONObject properties) {
         try {
             JSONObject action = new JSONObject().put("action", "trackSession");
-            if (properties != null) {
-                action.put("properties", properties);
+
+            if (properties == null) {
+                properties = new JSONObject();
             }
 
+            properties.put("$duration", mPreferences.getSessionDuration() / 1000);
+            mPreferences.setSessionDuration(0);
+
+            action.put("properties", properties);
             track(action);
-            if (mPreferences.getIsFirstTrackSessionSent() == false) {
+
+            if (!mPreferences.getIsFirstTrackSessionSent()) {
                 flushAndUploadAllEventsAsync();
                 mPreferences.setIsFirstTrackSessionSent(true);
             }
@@ -313,14 +333,6 @@ public class AppMetrTrackingManager {
     protected void trackAppStart() {
         if (!mTrackInstallByApp) {
             trackAppStartImpl();
-//            Commented cause need to execute AppStart in main thread
-//            mThreadExecutor.execute(new Runnable()
-//            {
-//                public void run()
-//                {
-//                    trackAppStartImpl();
-//                }
-//            });
         }
 
         if (mPreferences.getIsPullCommandsOnResume()) {

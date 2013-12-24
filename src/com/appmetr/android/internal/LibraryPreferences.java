@@ -70,6 +70,7 @@ public class LibraryPreferences {
     protected static final String PROCESSED_COMMAND_LIST_PROP_NAME = "AppMetr-ProcessedCommandList";
     protected static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
     protected static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
+    protected static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
 
     /**
      * An application shred preferences
@@ -83,6 +84,7 @@ public class LibraryPreferences {
 
     protected boolean mPullCommandsOnResume = false;
     protected String mLastProcessedCommandID;
+    protected long mSessionDuration;
 
     public LibraryPreferences(Context context) {
         this(context.getSharedPreferences(LIBRARY_NAME, Activity.MODE_PRIVATE));
@@ -96,6 +98,7 @@ public class LibraryPreferences {
         mProcessedCommandList = getPrecessedCommandList();
         mPullCommandsOnResume = mPreference.getBoolean(PULL_COMMANDS_ON_REQUEST_PROP_NAME, false);
         mLastProcessedCommandID = mPreference.getString(LAST_PROCESSED_COMMAND_PROP_NAME, null);
+        mSessionDuration = mPreference.getLong(SESSION_DURATION_PROP_NAME, 0);
     }
 
     /**
@@ -338,5 +341,22 @@ public class LibraryPreferences {
             editor.putString(LAST_PROCESSED_COMMAND_PROP_NAME, mLastProcessedCommandID);
             editor.commit();
         }
+    }
+
+    /**
+     * @return session duration time
+     */
+    public long getSessionDuration() { return mSessionDuration; }
+
+    /**
+     * Set session duration
+     *
+     * @param value - time in seconds
+     */
+    public void setSessionDuration(long value) {
+        mSessionDuration = value;
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.putLong(SESSION_DURATION_PROP_NAME, mSessionDuration);
+        editor.commit();
     }
 }
