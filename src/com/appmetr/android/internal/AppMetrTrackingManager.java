@@ -300,8 +300,13 @@ public class AppMetrTrackingManager {
                 properties = new JSONObject();
             }
 
-            properties.put("$duration", mPreferences.getSessionDuration() / 1000);
+            long duration = mPreferences.getSessionDuration() / 1000;
             mPreferences.setSessionDuration(0);
+            if (!mPreferences.getIsFirstTrackSessionSent()) {
+                duration = -1;
+            }
+
+            properties.put("$duration", duration);
 
             action.put("properties", properties);
             track(action);
