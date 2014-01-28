@@ -39,21 +39,4 @@ public class LibraryPreferencesTests extends BaseAppMetrDummyActivityTest {
 
         super.tearDown();
     }
-
-    public void testEmptyCommandList() {
-        assertEquals("Command aready test-cmd-1 exist O_o", false, mTestInstance.hasCommandProcessd("test-cmd-1"));
-    }
-
-    public void testCommandList() {
-        mTestInstance.setCommandProcessed("test-cmd-1");
-        assertEquals("Command test-cmd-1 does not exist", true, mTestInstance.hasCommandProcessd("test-cmd-1"));
-
-        LibraryPreferences instance1 = new LibraryPreferences(mPreferences);
-        assertEquals("Command test-cmd-1 does not exist", true, instance1.hasCommandProcessd("test-cmd-1"));
-
-        mTestInstance.setCommandProcessed("test-cmd-2");
-        LibraryPreferences instance2 = new LibraryPreferences(mPreferences);
-        assertEquals("Command test-cmd-2 does not exist", true, instance2.hasCommandProcessd("test-cmd-2"));
-        assertEquals("Command test-cmd-2 already exist", false, instance1.hasCommandProcessd("test-cmd-2"));
-    }
 }

@@ -55,7 +55,7 @@ public class LibraryPreferences {
     /**
      * The version string of AppMetrAndroid library
      */
-    public static final String VERSION_STRING = "1.7.1";
+    public static final String VERSION_STRING = "1.7.2";
 
     /**
      * Time in milliseconds to query remote commands
@@ -67,7 +67,6 @@ public class LibraryPreferences {
     protected static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
     protected static final String INSTALL_URL_PROP_NAME = "AppMetr-InstallURLTracked";
     protected static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSessionSent";
-    protected static final String PROCESSED_COMMAND_LIST_PROP_NAME = "AppMetr-ProcessedCommandList";
     protected static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
     protected static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
     protected static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
@@ -80,7 +79,6 @@ public class LibraryPreferences {
     protected Integer mCurrentBatchID;
     protected Integer mLastFileIndex;
     protected boolean mIsFirstTrackSessionSent;
-    protected final ArrayList<String> mProcessedCommandList;
 
     protected boolean mPullCommandsOnResume = false;
     protected String mLastProcessedCommandID;
@@ -95,7 +93,6 @@ public class LibraryPreferences {
         mCurrentBatchID = Integer.valueOf(getFirstBatchID());
         mLastFileIndex = Integer.valueOf(mPreference.getInt(FILE_INDEX_PROP_NAME, 0));
         mIsFirstTrackSessionSent = getIsFirstTrackSessionSent();
-        mProcessedCommandList = getPrecessedCommandList();
         mPullCommandsOnResume = mPreference.getBoolean(PULL_COMMANDS_ON_REQUEST_PROP_NAME, false);
         mLastProcessedCommandID = mPreference.getString(LAST_PROCESSED_COMMAND_PROP_NAME, null);
         mSessionDuration = mPreference.getLong(SESSION_DURATION_PROP_NAME, 0);
@@ -257,49 +254,6 @@ public class LibraryPreferences {
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putBoolean(FIRST_TRACK_SESSION_SENTPROP_NAME, mIsFirstTrackSessionSent);
         editor.commit();
-    }
-
-    private ArrayList<String> getPrecessedCommandList() {
-        ArrayList<String> ret;
-        try {
-            ret = getStringArrayList(PROCESSED_COMMAND_LIST_PROP_NAME);
-        } catch (JSONException e) {
-            Log.d(TAG, "Failed to read the processed command list from SharedPreferenses.", e);
-            ret = new ArrayList<String>();
-        }
-
-        return ret;
-    }
-
-    /**
-     * Returns whether the command already processed or not
-     *
-     * @param commandID The unique identifier of command
-     * @return
-     */
-    public boolean hasCommandProcessd(String commandID) {
-        synchronized (mProcessedCommandList) {
-            for (String value : mProcessedCommandList) {
-                if (value.compareTo(commandID) == 0) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Adds the command to the list of processed commands
-     *
-     * @param commandID The unique identifier of command
-     */
-    public void setCommandProcessed(String commandID) {
-        synchronized (mProcessedCommandList) {
-            if (!hasCommandProcessd(commandID)) {
-                mProcessedCommandList.add(commandID);
-                putArrayList(PROCESSED_COMMAND_LIST_PROP_NAME, mProcessedCommandList);
-            }
-        }
     }
 
     /**

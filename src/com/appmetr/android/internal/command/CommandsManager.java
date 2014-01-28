@@ -41,13 +41,16 @@ public class CommandsManager {
     private Runnable mCommandTask;
 
     protected volatile AppMetrListener mListener;
-    protected String mLastReceivedCommandID = null;
 
+    private String mLastReceivedCommandId = null;
     private final Runnable mProcessCommandTask;
 
     public CommandsManager(LibraryPreferences preferences) {
         mPreferences = preferences;
-        mLastReceivedCommandID = mPreferences.getLastProcessedCommandID();
+
+        //OnStart get commands form last processed command
+        mLastReceivedCommandId = mPreferences.getLastProcessedCommandID();
+
         mProcessCommandTask = new Runnable() {
             public void run() {
                 processCommands();
@@ -96,17 +99,11 @@ public class CommandsManager {
 
                 mPreferences.setLastProcessedCommandID(command.uniqueIdentifier);
             }
-
-            try {
-                AppMetr.pullCommands();
-            } catch (final Throwable t) {
-                Log.e(TAG, "Failed to pull commands.", t);
-            }
         }
     }
 
     private boolean validateCommand(RemoteCommand command) {
-        if (mPreferences.hasCommandProcessd(command.uniqueIdentifier)) {
+        if (isCommandProcessed(command.uniqueIdentifier)) {
             CommandTracker.trackCommandSkip(command.uniqueIdentifier, "duplicateId");
             return false;
         }
@@ -122,7 +119,6 @@ public class CommandsManager {
 
     private void executeCommand(AppMetrListener listener, RemoteCommand command) throws Throwable {
         if (validateCommand(command)) {
-            mPreferences.setCommandProcessed(command.uniqueIdentifier);
             try {
                 if (BuildConfig.DEBUG) {
                     Log.d(TAG, "Executing command id:" + command.uniqueIdentifier);
@@ -136,6 +132,20 @@ public class CommandsManager {
                 CommandTracker.trackCommandSkip(command.uniqueIdentifier, e.getProperties());
             }
         }
+    }
+
+    private boolean isCommandProcessed(String commandId) {
+        String lastProcessedCommandId = mPreferences.getLastProcessedCommandID();
+
+        if (lastProcessedCommandId == null) {
+            return false;
+        }
+
+        if (commandId == null) {
+            return true;
+        }
+
+        return lastProcessedCommandId.split("#")[0].compareTo(commandId.split("#")[0]) >= 0;
     }
 
     /**
@@ -169,14 +179,6 @@ public class CommandsManager {
                 shceduleRemoteCommands();
             }
         }
-    }
-
-    /**
-     * @return The current command task
-     * @see CommandsManager#setCommandTask(Runnable)
-     */
-    public Runnable getCommandTask() {
-        return mCommandTask;
     }
 
     /**
@@ -217,7 +219,7 @@ public class CommandsManager {
         for (RemoteCommand command : packet.commandList) {
             addRemoteCommand(command);
             res = true;
-            mLastReceivedCommandID = command.uniqueIdentifier;
+            mLastReceivedCommandId = command.uniqueIdentifier;
         }
 
         if (res) {
@@ -225,22 +227,22 @@ public class CommandsManager {
         }
     }
 
-    public void sentQueryRemoteCommandList(List<NameValuePair> parameters, WebServiceRequest webServise) {
+    public void sentQueryRemoteCommandList(List<NameValuePair> parameters, WebServiceRequest webService) {
         if (mListener != null) {
-            if (mLastReceivedCommandID != null) {
-                parameters.add((new BasicNameValuePair("lastCommandId", mLastReceivedCommandID)));
+            if (mLastReceivedCommandId != null) {
+                parameters.add((new BasicNameValuePair("lastCommandId", mLastReceivedCommandId)));
             }
-            sentQueryRemoteCommandListImpl(parameters, webServise);
+            sentQueryRemoteCommandListImpl(parameters, webService);
         }
     }
 
-    private void sentQueryRemoteCommandListImpl(List<NameValuePair> parameters, WebServiceRequest webServise) {
+    private void sentQueryRemoteCommandListImpl(List<NameValuePair> parameters, WebServiceRequest webService) {
         try {
-            JSONObject responce = null;
+            JSONObject response = null;
             String status = null;
             try {
-                responce = webServise.sendRequest(parameters);
-                status = responce.optString("status");
+                response = webService.sendRequest(parameters);
+                status = response.optString("status");
             } catch (final HttpException e) {
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "server.getCommands failed.", e);
@@ -252,20 +254,28 @@ public class CommandsManager {
             }
 
             if (status != null && status.compareTo("OK") == 0) {
-                RemoteCommandPacket packet = new RemoteCommandPacket(responce, new RemoteCommandPacket.Listener() {
+                RemoteCommandPacket packet = new RemoteCommandPacket(response, new RemoteCommandPacket.Listener() {
                     public boolean onRemoteCommandError(Throwable error) {
                         Log.e(TAG, "getCommand failed", error);
 
-                        CommandTracker.trackCommandFail(mLastReceivedCommandID, error);
+                        CommandTracker.trackCommandFail(mLastReceivedCommandId, error);
                         return true;
                     }
                 });
 
                 processPacket(packet);
+
+                if (!packet.isLastCommandsBatch) {
+                    try {
+                        AppMetr.pullCommands();
+                    } catch (final Throwable t) {
+                        Log.e(TAG, "Failed to pull commands.", t);
+                    }
+                }
             }
         } catch (final JSONException e) {
             Log.e(TAG, "getCommand failed", e);
-            CommandTracker.trackCommandBatch(mLastReceivedCommandID, "JSONException", e.getMessage());
+            CommandTracker.trackCommandBatch(mLastReceivedCommandId, "JSONException", e.getMessage());
         }
     }
 }
