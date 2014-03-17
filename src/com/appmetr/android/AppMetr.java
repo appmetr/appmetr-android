@@ -431,6 +431,22 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
+     * Track user state
+     *
+     * @param state - key-value data with user state
+     */
+    public static void trackState(JSONObject state) {
+        try {
+            JSONObject action = new JSONObject().put("action", "trackState");
+            action.put("state", state);
+
+            getInstance().track(action);
+        } catch (JSONException error) {
+            Log.e(TAG, "trackState failed", error);
+        }
+    }
+
+    /**
      * Identify user
      *
      * @param userId - user id

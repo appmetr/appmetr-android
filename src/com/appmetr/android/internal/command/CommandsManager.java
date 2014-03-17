@@ -217,6 +217,13 @@ public class CommandsManager {
     public void processPacket(RemoteCommandPacket packet) {
         boolean res = false;
         for (RemoteCommand command : packet.commandList) {
+
+            //Skip already processed commands (add this when implement identify functional)
+            if (!RemoteCommand.STATUS_NOT_SENT.equals(command.status) &&
+                    !RemoteCommand.STATUS_SENT.equals(command.status)) {
+                continue;
+            }
+
             addRemoteCommand(command);
             res = true;
             mLastReceivedCommandId = command.uniqueIdentifier;

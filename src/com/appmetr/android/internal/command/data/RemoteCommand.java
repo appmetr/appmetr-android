@@ -10,20 +10,31 @@ import org.json.JSONObject;
 import java.util.Date;
 
 public final class RemoteCommand {
+
+    public static final String STATUS_SUCCESS = "success";
+    public static final String STATUS_SKIP = "skip";
+    public static final String STATUS_FAIL = "fail";
+    public static final String STATUS_NOT_SENT = "not_sent";
+    public static final String STATUS_SENT = "sent";
+
     /**
      * the unique identifier of this command
      */
     public final String uniqueIdentifier;
     /**
-     * the type of this command
+     * status of this command
+     */
+    public final String status;
+    /**
+     * type of this command
      */
     public final String type;
     /**
-     * the date, the latest of which this command can run
+     * date, the latest of which this command can run
      */
     public final Date validTo;
     /**
-     * the parameter of this command
+     * parameter of this command
      */
     public final JSONObject properties;
 
@@ -35,6 +46,7 @@ public final class RemoteCommand {
      */
     public RemoteCommand(JSONObject object) throws JSONException {
         uniqueIdentifier = object.getString("commandId");
+        status = object.getString("status");
         type = object.getString("type");
 
         long sendDate = object.getLong("sendDate");
