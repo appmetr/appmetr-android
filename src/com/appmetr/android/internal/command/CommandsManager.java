@@ -219,7 +219,7 @@ public class CommandsManager {
         for (RemoteCommand command : packet.commandList) {
 
             //Skip already processed commands (add this when implement identify functional)
-            if (!RemoteCommand.STATUS_NOT_SENT.equals(command.status) &&
+            if (!RemoteCommand.STATUS_RE_SENT.equals(command.status) &&
                     !RemoteCommand.STATUS_SENT.equals(command.status)) {
                 continue;
             }

@@ -16,6 +16,7 @@ public final class RemoteCommand {
     public static final String STATUS_FAIL = "fail";
     public static final String STATUS_NOT_SENT = "not_sent";
     public static final String STATUS_SENT = "sent";
+    public static final String STATUS_RE_SENT = "re_sent";
 
     /**
      * the unique identifier of this command
