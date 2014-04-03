@@ -77,5 +77,19 @@ public class CasesTabActivity extends AbstractTabActivity {
 
             }
         });
+
+        Button buttonIdentify = (Button) findViewById(R.id.buttonIdentify);
+        buttonIdentify.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {
+                EditText editIdentifyUserId = (EditText) findViewById(R.id.editIdentifyUserId);
+
+                String userId = editIdentifyUserId.getText().toString();
+
+                if (userId.length() > 0) {
+                    AppMetr.identify(userId);
+                    logMessage(String.format("Identify for user id \"%1$s\"", userId));
+                }
+            }
+        });
     }
 }

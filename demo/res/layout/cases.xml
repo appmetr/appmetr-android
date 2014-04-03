@@ -62,5 +62,31 @@
             android:layout_toRightOf="@id/buttonTrackPayment"
             android:hint="@string/cases_tab_hint_payment_usd"
             />
+    <View
+            android:id="@+id/paymentDelimiter"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_below="@id/buttonTrackPayment"
+            />
+
+    <Button
+            android:id="@+id/buttonIdentify"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/cases_tab_button_identify"
+            android:layout_below="@id/paymentDelimiter"
+            />
+    <EditText
+            android:id="@+id/editIdentifyUserId"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_marginTop="4dp"
+            android:layout_below="@id/paymentDelimiter"
+            android:layout_toRightOf="@id/buttonIdentify"
+            android:hint="@string/cases_tab_hint_identify"
+            />
 
 </RelativeLayout>
