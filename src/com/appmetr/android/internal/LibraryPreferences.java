@@ -55,7 +55,7 @@ public class LibraryPreferences {
     /**
      * The version string of AppMetrAndroid library
      */
-    public static final String VERSION_STRING = "1.8.1";
+    public static final String VERSION_STRING = "1.8.2";
 
     /**
      * Time in milliseconds to query remote commands
