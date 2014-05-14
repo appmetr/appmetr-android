@@ -304,20 +304,17 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Registering state of the game
-     *
-     * @param state      The state to register
-     * @param properties The custom properties to rester
+     * Registering advertising event track
+     * @param event Event to track
      */
-    public static void trackGameState(String state, JSONObject properties) {
+    public static void trackAdsEvent(String event) {
         try {
-            JSONObject action = new JSONObject().put("action", "trackGameState");
-            action.put("state", state);
-            action.put("properties", properties);
+            JSONObject action = new JSONObject().put("action", "adsEventBroadcast");
+            action.put("event", event);
 
             getInstance().track(action);
         } catch (JSONException error) {
-            Log.e(TAG, "trackGameState failed", error);
+            Log.e(TAG, "adsEventBroadcast failed", error);
         }
     }
 

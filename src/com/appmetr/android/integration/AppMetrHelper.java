@@ -103,6 +103,17 @@ public class AppMetrHelper {
     }
 
     /**
+     * Method for tracking advertising events
+     */
+    public static void trackAdsEvent(String event) {
+        try {
+            AppMetr.trackAdsEvent(event);
+        } catch (final Throwable error) {
+            Log.e(TAG, "trackAdsEvent failed", error);
+        }
+    }
+
+    /**
      * Sets the default payment
      *
      * @param processor The value of default processor
