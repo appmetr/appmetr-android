@@ -3,6 +3,7 @@ package com.appmetr.android.demo.tabs;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import com.appmetr.android.AppMetr;
 import com.appmetr.android.demo.R;
@@ -55,7 +56,12 @@ public class CasesTabActivity extends AbstractTabActivity {
         buttonTrackPayment.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
                 EditText editPaymentUSD = (EditText) findViewById(R.id.editPaymentUSD);
+                EditText editPaymentCountry = (EditText) findViewById(R.id.editPaymentCountry);
+                CheckBox checkPaymentIsSandbox = (CheckBox) findViewById(R.id.checkPaymentIsSandbox);
+
                 Double usdAmount = Double.valueOf(editPaymentUSD.getText().toString());
+                String country = editPaymentCountry.getText().toString();
+                Boolean isSandbox = checkPaymentIsSandbox.isChecked();
 
                 JSONObject payment = new JSONObject();
                 try {
@@ -66,6 +72,14 @@ public class CasesTabActivity extends AbstractTabActivity {
                     payment.put("transactionId", UUID.randomUUID().toString());
                     payment.put("appCurrencyCode", "coins");
                     payment.put("appCurrencyAmount", usdAmount * 5);
+
+                    if (country != null && country.length() > 0) {
+                        payment.put("psUserStoreCountryCode", country);
+                    }
+
+                    if (isSandbox) {
+                        payment.put("isSandbox", isSandbox);
+                    }
 
                     AppMetr.trackPayment(payment);
                     logMessage("Payment tracked");

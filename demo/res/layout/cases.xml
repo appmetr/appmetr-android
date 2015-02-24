@@ -62,6 +62,24 @@
             android:layout_toRightOf="@id/buttonTrackPayment"
             android:hint="@string/cases_tab_hint_payment_usd"
             />
+    <EditText
+            android:id="@+id/editPaymentCountry"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_marginTop="4dp"
+            android:layout_below="@id/abDelimiter"
+            android:layout_toRightOf="@id/editPaymentUSD"
+            android:hint="@string/cases_tab_hint_payment_country"
+            />
+    <CheckBox
+            android:id="@+id/checkPaymentIsSandbox"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_below="@id/abDelimiter"
+            android:layout_toRightOf="@id/editPaymentCountry"
+            android:text="@string/cases_tab_hint_payment_is_sandbox"
+            />
     <View
             android:id="@+id/paymentDelimiter"
             android:layout_width="fill_parent"
