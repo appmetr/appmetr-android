@@ -1,1 +1,0 @@
-AppMetr Android library

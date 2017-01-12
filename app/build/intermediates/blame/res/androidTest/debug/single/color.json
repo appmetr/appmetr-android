@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "D:\\Android Projects\\AppMetrNew\\app\\build\\intermediates\\res\\merged\\androidTest\\debug\\color\\common_google_signin_btn_text_dark.xml",
+        "source": "D:\\Android Projects\\AppMetrNew\\app\\build\\intermediates\\exploded-aar\\com.google.android.gms\\play-services-base\\10.0.1\\res\\color\\common_google_signin_btn_text_dark.xml"
+    },
+    {
+        "merged": "D:\\Android Projects\\AppMetrNew\\app\\build\\intermediates\\res\\merged\\androidTest\\debug\\color\\common_google_signin_btn_text_light.xml",
+        "source": "D:\\Android Projects\\AppMetrNew\\app\\build\\intermediates\\exploded-aar\\com.google.android.gms\\play-services-base\\10.0.1\\res\\color\\common_google_signin_btn_text_light.xml"
+    }
+]
