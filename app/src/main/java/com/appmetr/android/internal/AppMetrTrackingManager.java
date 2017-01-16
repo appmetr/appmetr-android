@@ -573,7 +573,7 @@ public class AppMetrTrackingManager {
      * @return - HTTP header
      */
     protected List<NameValuePair> getRequestParameters(String method) {
-        List<NameValuePair> ret = new ArrayList<NameValuePair>(9);
+        List<NameValuePair> ret = new ArrayList<NameValuePair>(10);
         ret.add(new BasicNameValuePair("method", method));
         ret.add(new BasicNameValuePair("token", mToken));
         ret.add(new BasicNameValuePair("userId", mUserID));
