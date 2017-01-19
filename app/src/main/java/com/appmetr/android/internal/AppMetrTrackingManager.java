@@ -7,12 +7,15 @@ package com.appmetr.android.internal;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.BuildConfig;
 import com.appmetr.android.internal.command.CommandsManager;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+
 import org.OpenUDID.OpenUDID_manager;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -38,6 +41,7 @@ public class AppMetrTrackingManager {
     protected String mToken = null;
     protected final RequestParameters mRequestParameters;
     protected final String mUserID;
+    protected String mGoogleAID;
     protected String mWebServiceCustomUrl;
     protected WebServiceRequest mWebServiceRequest;
     protected boolean mTrackInstallByApp = true;
@@ -99,6 +103,8 @@ public class AppMetrTrackingManager {
 
         mRequestParameters = new RequestParameters(context);
         mUserID = mRequestParameters.getUserID();
+
+        new GetGAIDTask().execute(context);
     }
 
     private static void initOpenUDID(Context context) {
@@ -573,7 +579,7 @@ public class AppMetrTrackingManager {
      * @return - HTTP header
      */
     protected List<NameValuePair> getRequestParameters(String method) {
-        List<NameValuePair> ret = new ArrayList<NameValuePair>(10);
+        List<NameValuePair> ret = new ArrayList<NameValuePair>(9);
         ret.add(new BasicNameValuePair("method", method));
         ret.add(new BasicNameValuePair("token", mToken));
         ret.add(new BasicNameValuePair("userId", mUserID));
@@ -584,7 +590,10 @@ public class AppMetrTrackingManager {
         ret.add(new BasicNameValuePair("mobOSVer", Build.VERSION.RELEASE));
         ret.add(new BasicNameValuePair("mobLibVer", LibraryPreferences.VERSION_STRING));
         ret.add(new BasicNameValuePair("mobAndroidID", mRequestParameters.ANDROID_ID));
-        ret.add(new BasicNameValuePair("mobGoogleAID", mRequestParameters.GOOGLE_AID));
+
+        if(mGoogleAID != null) {
+            ret.add(new BasicNameValuePair("mobGoogleAid", mGoogleAID));
+        }
 
         if (mRequestParameters.GOOGLE_ACCOUNT_HASH != null) {
             ret.add(new BasicNameValuePair("psUserIdsGC", mRequestParameters.GOOGLE_ACCOUNT_HASH));
@@ -684,6 +693,35 @@ public class AppMetrTrackingManager {
         } catch (final Throwable t) {
             Log.e(TAG, "Failed to validate payment", t);
             return false;
+        }
+    }
+
+    /**
+     * Sets GoogleAID
+     */
+    private class GetGAIDTask extends AsyncTask<Context, Integer, String> {
+        @Override
+        protected String doInBackground(Context... contexts)
+        {
+            try {
+                AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(contexts[0]);
+
+                if(info.isLimitAdTrackingEnabled()) {
+                    return "Limit Ad Tracking";
+                }
+
+                return info.getId();
+            } catch (final Throwable t) {
+                if(BuildConfig.DEBUG) {
+                    Log.e(TAG, "Failed to retrieve GOOGLE_AID", t);
+                }
+                return "";
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mGoogleAID = result;
         }
     }
 }

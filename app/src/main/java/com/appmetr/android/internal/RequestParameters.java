@@ -14,7 +14,6 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import com.appmetr.android.BuildConfig;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
@@ -38,7 +37,6 @@ public class RequestParameters {
     public final String DEVICE_ID;
     public final String BUILD_SERIAL;
     public final String ANDROID_ID;
-    public final String GOOGLE_AID;
 
     /**
      * Retrieve request parameters from context
@@ -49,7 +47,6 @@ public class RequestParameters {
         DEVICE_ID = getDeviceID(context);
         BUILD_SERIAL = getBuildSerial();
         ANDROID_ID = getAndroidID(context);
-        GOOGLE_AID = getGoogleAID(context);
     }
 
     private static class GoogleAccountEmail {
@@ -166,17 +163,6 @@ public class RequestParameters {
             if (BuildConfig.DEBUG) {
                 Log.e(TAG, "Failed to retrieve ANDROID_ID", t);
             }
-        }
-
-        return (ret == null ? "" : ret);
-    }
-
-    private static String getGoogleAID(Context context) {
-        String ret = null;
-        try {
-            ret = AdvertisingIdClient.getAdvertisingIdInfo(context).getId();
-        } catch (final Throwable t) {
-            Log.e(TAG, "Failed to retrieve GOOGLE_AID", t);
         }
 
         return (ret == null ? "" : ret);
