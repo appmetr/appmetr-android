@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <EditText
+            android:id="@+id/editEventName"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:textSize="15dp"
+            android:hint="@string/event_tab_hint_event_name"
+            />
+    <Button
+            android:id="@+id/buttonTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/button_track"
+            android:layout_marginTop="5dp"
+            android:layout_toRightOf="@id/editEventName"
+            />
+    <Button
+            android:id="@+id/buttonFlush"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/button_flush"
+            android:layout_below="@id/editEventName"
+            />
+    <Button
+            android:id="@+id/buttonPull"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/button_pull"
+            android:layout_below="@id/editEventName"
+            android:layout_toRightOf="@id/buttonFlush"
+            />
+    <Button
+            android:id="@+id/buttonTrackSession"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/event_tab_button_track_session"
+            android:layout_below="@id/editEventName"
+            android:layout_toRightOf="@id/buttonPull"
+            />
+    <Button
+            android:id="@+id/buttonClear"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/event_tab_button_clear"
+            android:layout_below="@id/editEventName"
+            android:layout_toRightOf="@id/buttonTrackSession"
+            />
+    <TextView
+            android:id="@+id/textViewLog"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonFlush"
+            android:text="Content"
+            />
+
+
+</RelativeLayout>

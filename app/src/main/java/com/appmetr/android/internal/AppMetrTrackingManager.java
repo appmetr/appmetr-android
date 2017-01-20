@@ -707,10 +707,10 @@ public class AppMetrTrackingManager {
                 AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(contexts[0]);
 
                 if(info.isLimitAdTrackingEnabled()) {
-                    return "Limit Ad Tracking";
+                    return "";
+                } else {
+                    return info.getId();
                 }
-
-                return info.getId();
             } catch (final Throwable t) {
                 if(BuildConfig.DEBUG) {
                     Log.e(TAG, "Failed to retrieve GOOGLE_AID", t);

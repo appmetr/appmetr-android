@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <Spinner
+            android:id="@+id/spinnerEventType"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            />
+    <EditText
+            android:id="@+id/editEventName"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_below="@id/spinnerEventType"
+            android:visibility="invisible"
+            android:hint="@string/custom_tab_hint_event_name"
+            />
+    <EditText
+            android:id="@+id/editPropertyName"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_below="@id/editEventName"
+            android:hint="@string/custom_tab_hint_property_name"
+            />
+    <EditText
+            android:id="@+id/editPropertyValue"
+            android:layout_width="205dp"
+            android:layout_height="40dp"
+            android:textSize="15dp"
+            android:layout_below="@id/editPropertyName"
+            android:hint="@string/custom_tab_hint_property_value"
+            />
+    <Button
+            android:id="@+id/buttonAddProperty"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/custom_tab_button_add_property"
+            android:layout_below="@id/editPropertyValue"
+            />
+    <Button
+            android:id="@+id/buttonDeleteProperty"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/custom_tab_button_delete_property"
+            android:layout_below="@id/editPropertyValue"
+            android:layout_toRightOf="@id/buttonAddProperty"
+            />
+    <ListView
+            android:id="@+id/listViewProperties"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_below="@id/buttonAddProperty"
+            android:choiceMode="multipleChoice"
+            />
+
+    <Button
+            android:id="@+id/buttonTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/button_track"
+            android:layout_below="@id/listViewProperties"
+            />
+
+    <Button
+            android:id="@+id/buttonFlush"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/button_flush"
+            android:layout_below="@id/listViewProperties"
+            android:layout_toRightOf="@id/buttonTrack"
+            />
+
+</RelativeLayout>
