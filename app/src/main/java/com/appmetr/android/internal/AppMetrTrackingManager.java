@@ -15,7 +15,6 @@ import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.BuildConfig;
 import com.appmetr.android.internal.command.CommandsManager;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
-
 import org.OpenUDID.OpenUDID_manager;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -591,7 +590,7 @@ public class AppMetrTrackingManager {
         ret.add(new BasicNameValuePair("mobLibVer", LibraryPreferences.VERSION_STRING));
         ret.add(new BasicNameValuePair("mobAndroidID", mRequestParameters.ANDROID_ID));
 
-        if(mGoogleAID != null) {
+        if (mGoogleAID != null) {
             ret.add(new BasicNameValuePair("mobGoogleAid", mGoogleAID));
         }
 
@@ -701,18 +700,17 @@ public class AppMetrTrackingManager {
      */
     private class GetGAIDTask extends AsyncTask<Context, Integer, String> {
         @Override
-        protected String doInBackground(Context... contexts)
-        {
+        protected String doInBackground(Context... contexts) {
             try {
                 AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(contexts[0]);
 
-                if(info.isLimitAdTrackingEnabled()) {
+                if (info.isLimitAdTrackingEnabled()) {
                     return "";
                 } else {
                     return info.getId();
                 }
             } catch (final Throwable t) {
-                if(BuildConfig.DEBUG) {
+                if (BuildConfig.DEBUG) {
                     Log.e(TAG, "Failed to retrieve GOOGLE_AID", t);
                 }
                 return "";
