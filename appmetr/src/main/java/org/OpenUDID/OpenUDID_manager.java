@@ -104,7 +104,10 @@ public class OpenUDID_manager implements ServiceConnection{
 			if (LOG) Log.d(TAG, "OpenUDID: " + OpenUDID);
 
 			storeOpenUDID();//Store it locally
-			mInitialized = true;
+            synchronized (mInitializedMutex) {
+                mInitialized = true;
+                mInitializedMutex.notifyAll();
+            }
 		}
 	}
 	
@@ -119,7 +122,8 @@ public class OpenUDID_manager implements ServiceConnection{
 	
 	
 	private static String OpenUDID = null;
-	private static boolean mInitialized = false; 
+	private static boolean mInitialized = false;
+	private static final Object mInitializedMutex = new Object();
 
 	/**
 	 * The Method to call to get OpenUDID
@@ -160,11 +164,29 @@ public class OpenUDID_manager implements ServiceConnection{
 		
 		} else {//Got it, you can now call getOpenUDID()
 			if (LOG) Log.d(TAG, "OpenUDID: " + OpenUDID);
-			mInitialized = true;
+            synchronized (mInitializedMutex) {
+                mInitialized = true;
+                mInitializedMutex.notifyAll();
+            }
 		}
 	}
-	
-	
+
+    /**
+     * Waiting for OpenUDID initialization
+     */
+    public static void waitOpenUDIDInitialized(long timeout) {
+        int attempts = 3;
+        while (!isInitialized() && attempts > 0) {
+            attempts--;
+            synchronized (mInitializedMutex) {
+                if (!isInitialized())
+                    try {
+                        mInitializedMutex.wait(timeout / 3);
+                    } catch (InterruptedException e) {
+                    }
+            }
+        }
+    }
 	
 	/*
 	 * Used to sort the OpenUDIDs collected by occurrence
