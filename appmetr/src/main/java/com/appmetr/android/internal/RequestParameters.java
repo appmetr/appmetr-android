@@ -4,8 +4,6 @@
  */
 package com.appmetr.android.internal;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -16,9 +14,6 @@ import android.util.Log;
 import com.appmetr.android.BuildConfig;
 
 import java.lang.reflect.Field;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Formatter;
 import java.util.Locale;
 
 /**
@@ -32,7 +27,6 @@ public class RequestParameters {
      */
     private static final String MAGIC_ANDROID_ID = "9774d56d682e549c";
 
-    public final String GOOGLE_ACCOUNT_HASH;
     public final String MAC_ADDRESS;
     public final String DEVICE_ID;
     public final String BUILD_SERIAL;
@@ -42,60 +36,10 @@ public class RequestParameters {
      * Retrieve request parameters from context
      */
     public RequestParameters(Context context) {
-        GOOGLE_ACCOUNT_HASH = GoogleAccountEmail.getHash(context);
         MAC_ADDRESS = getMacAddress(context);
         DEVICE_ID = getDeviceID(context);
         BUILD_SERIAL = getBuildSerial();
         ANDROID_ID = getAndroidID(context);
-    }
-
-    private static class GoogleAccountEmail {
-        private static String TAG = "GoogleAccountEmail";
-
-        public static String getHash(Context context) {
-            String ret = null;
-            try {
-                ret = getHashImpl(context);
-            } catch (final Throwable t) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(TAG, "Failed to retrieve google accout.", t);
-                }
-            }
-
-            return ret;
-        }
-
-        private static String getHashImpl(Context context) throws NoSuchAlgorithmException {
-            final AccountManager accountMgr = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-            String ret = "";
-            if (accountMgr != null) {
-                final Account[] accountList = accountMgr.getAccountsByType("com.google");
-                for (Account account : accountList) {
-                    if (ret.length() != 0) {
-                        ret += ",";
-                    }
-                    ret += md5(LibraryPreferences.MD5_SALT + ":" + account.name.trim().toLowerCase(Locale.getDefault()));
-                }
-            }
-            return (ret.length() != 0 ? ret : null);
-        }
-
-        private static String md5(String data) throws NoSuchAlgorithmException {
-            final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            final StringBuilder builder = new StringBuilder(32); //32 - MD5 string length (16 digest)
-            final Formatter fmt = new Formatter(builder);
-
-            messageDigest.reset();
-            messageDigest.update(data.getBytes());
-
-            final byte[] digest = messageDigest.digest();
-            for (byte value : digest) {
-                fmt.format("%02x", value);
-            }
-
-            fmt.close();
-            return builder.toString();
-        }
     }
 
     private static String getMacAddress(Context context) {

@@ -24,6 +24,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    provided 'com.google.android.gms:play-services-ads:9.+'
 }
 
 task clearLibraryJar(type: Delete) {

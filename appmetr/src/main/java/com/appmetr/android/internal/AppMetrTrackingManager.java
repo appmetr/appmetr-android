@@ -13,6 +13,8 @@ import android.util.Log;
 import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.BuildConfig;
 import com.appmetr.android.internal.command.CommandsManager;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+
 import org.OpenUDID.OpenUDID_manager;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +38,7 @@ public class AppMetrTrackingManager {
     protected String mToken = null;
     protected final RequestParameters mRequestParameters;
     protected final String mUserID;
+    protected String mGoogleAID;
     protected String mWebServiceCustomUrl;
     protected WebServiceRequest mWebServiceRequest;
     protected boolean mTrackInstallByApp = true;
@@ -571,7 +574,7 @@ public class AppMetrTrackingManager {
      * @return - HTTP header
      */
     protected List<HttpNameValuePair> getRequestParameters(String method) {
-        List<HttpNameValuePair> ret = new ArrayList<HttpNameValuePair>(9);
+        List<HttpNameValuePair> ret = new ArrayList<HttpNameValuePair>();
         ret.add(new HttpNameValuePair("method", method));
         ret.add(new HttpNameValuePair("token", mToken));
         ret.add(new HttpNameValuePair("userId", mUserID));
@@ -583,8 +586,20 @@ public class AppMetrTrackingManager {
         ret.add(new HttpNameValuePair("mobLibVer", LibraryPreferences.VERSION_STRING));
         ret.add(new HttpNameValuePair("mobAndroidID", mRequestParameters.ANDROID_ID));
 
-        if (mRequestParameters.GOOGLE_ACCOUNT_HASH != null) {
-            ret.add(new HttpNameValuePair("psUserIdsGC", mRequestParameters.GOOGLE_ACCOUNT_HASH));
+        /* Lazy Google AID requesting */
+        if(mGoogleAID == null) {
+            try {
+                AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(mContextProxy.getContext());
+                mGoogleAID = info.getId() == null ? "" : info.getId();
+            } catch(final Throwable t) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Failed to retrieve GOOGLE_AID", t);
+                }
+                mGoogleAID = "";
+            }
+        }
+        if(!mGoogleAID.isEmpty()) {
+            ret.add(new HttpNameValuePair("mobGoogleAid", mGoogleAID));
         }
 
         if (mRequestParameters.MAC_ADDRESS != null) {
