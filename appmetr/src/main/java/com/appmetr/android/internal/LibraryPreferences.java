@@ -62,6 +62,11 @@ public class LibraryPreferences {
      */
     public static final int DEFAULT_REMOTE_COMMAND_TIME = 70000;
 
+    /**
+     * Time in milliseconds for max pause state, after which starts new session
+     */
+    public static final int SESSION_MAX_PAUSE_DURATION = 10 * 60 * 1000;
+
     protected static final String BATCH_ID_KEY = "AppMetr-BatchID";
     protected static final String FILE_INDEX_PROP_NAME = "AppMetr-FileIndex";
     protected static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
@@ -70,6 +75,7 @@ public class LibraryPreferences {
     protected static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
     protected static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
     protected static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
+    protected static final String SESSION_DURATION_CURRENT_PROP_NAME = "AppMetr-SessionDurationCurrent";
 
     /**
      * An application shred preferences
@@ -83,6 +89,7 @@ public class LibraryPreferences {
     protected boolean mPullCommandsOnResume = false;
     protected String mLastProcessedCommandID;
     protected long mSessionDuration;
+    protected long mSessionDurationCurrent;
 
     public LibraryPreferences(Context context) {
         this(context.getSharedPreferences(LIBRARY_NAME, Activity.MODE_PRIVATE));
@@ -96,6 +103,7 @@ public class LibraryPreferences {
         mPullCommandsOnResume = mPreference.getBoolean(PULL_COMMANDS_ON_REQUEST_PROP_NAME, false);
         mLastProcessedCommandID = mPreference.getString(LAST_PROCESSED_COMMAND_PROP_NAME, null);
         mSessionDuration = mPreference.getLong(SESSION_DURATION_PROP_NAME, 0);
+        mSessionDurationCurrent = mPreference.getLong(SESSION_DURATION_CURRENT_PROP_NAME, 0);
     }
 
     /**
@@ -311,6 +319,25 @@ public class LibraryPreferences {
         mSessionDuration = value;
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putLong(SESSION_DURATION_PROP_NAME, mSessionDuration);
+        editor.commit();
+    }
+
+    /**
+     * Current session duration time
+     *
+     * @return current session duration time
+     */
+    public long getSessionDurationCurrent() { return mSessionDurationCurrent; }
+
+    /**
+     * Set current session duration
+     *
+     * @param value - time in seconds
+     */
+    public void setSessionDurationCurrent(long value) {
+        mSessionDurationCurrent = value;
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.putLong(SESSION_DURATION_CURRENT_PROP_NAME, mSessionDurationCurrent);
         editor.commit();
     }
 }
