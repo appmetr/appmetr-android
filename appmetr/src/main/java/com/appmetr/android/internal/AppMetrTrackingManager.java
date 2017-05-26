@@ -206,6 +206,7 @@ public class AppMetrTrackingManager {
             initThreadExecutor();
             createTimers();
             trackAppStart();
+            startSession();
 
             mStartTime = new Date().getTime();
             mStarted = true;
@@ -225,7 +226,10 @@ public class AppMetrTrackingManager {
 
             mStartLock.lock();
 
-            mPreferences.setSessionDuration(mPreferences.getSessionDuration() + (new Date().getTime() - mStartTime));
+            mPreferences.setSessionDurationCurrent(mPreferences.getSessionDurationCurrent() + (System.currentTimeMillis() - mStartTime));
+
+            // saves sleep time for calculating pause duration in future
+            mStartTime = System.currentTimeMillis();
 
             unloadLibrary();
             flushDataImpl();
@@ -248,7 +252,12 @@ public class AppMetrTrackingManager {
             createTimers();
             trackAppStart();
 
-            mStartTime = new Date().getTime();
+            // If application was paused more than MAX time
+            if((System.currentTimeMillis() - mStartTime) >= LibraryPreferences.SESSION_MAX_PAUSE_DURATION) {
+                // start new session
+                startSession();
+            }
+            mStartTime = System.currentTimeMillis();
             mStarted = true;
         }
         mStartLock.unlock();
@@ -289,9 +298,11 @@ public class AppMetrTrackingManager {
     }
 
     /**
-     * Method for tracking game event as "track session" with parameters
+     * Method for tracking game event as "track session" with properties
+     * This method sends properties of current session with duration of
+     * previous session or -1 duration, if previous session not preset
      *
-     * @param properties properties for event
+     * @param properties properties for current session
      */
     protected void trackSessionImpl(JSONObject properties) {
         try {
@@ -303,9 +314,10 @@ public class AppMetrTrackingManager {
 
             long duration = mPreferences.getSessionDuration() / 1000;
             mPreferences.setSessionDuration(0);
-            if (!mPreferences.getIsFirstTrackSessionSent()) {
-                duration = -1;
-            }
+            if (mPreferences.getIsFirstTrackSessionSent() && duration <= 0)
+                return; // not first launch and session duration is empty, ignoring
+            if(!mPreferences.getIsFirstTrackSessionSent())
+                duration = -1; // first launch, track install
 
             properties.put("$duration", duration);
 
@@ -566,6 +578,14 @@ public class AppMetrTrackingManager {
         synchronized (mFileList) {
             mFileList.remove(fileName);
         }
+    }
+
+    private void startSession() {
+        if(mPreferences.getSessionDuration() > 0)
+            trackSessionImpl(null);
+        long currentDuration = mPreferences.getSessionDurationCurrent();
+        mPreferences.setSessionDuration(currentDuration);
+        mPreferences.setSessionDurationCurrent(0);
     }
 
     /**
