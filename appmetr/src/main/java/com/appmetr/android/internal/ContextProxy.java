@@ -21,11 +21,7 @@ public class ContextProxy {
     /**
      * The version name of application
      */
-    public static String APP_VERSION = "not initialized";
-    /**
-     * The name of country
-     */
-    public static String COUNTRY = "not initialized";
+    public static String AppVersion = "not initialized";
 
     private final Context mContext;
 
@@ -36,9 +32,7 @@ public class ContextProxy {
      */
     public ContextProxy(Context context) {
         mContext = context;
-
-        APP_VERSION = getVersion(context);
-        COUNTRY = getCountry(context);
+        AppVersion = getVersion(context);
     }
 
     /**
@@ -61,25 +55,6 @@ public class ContextProxy {
         } catch (final NameNotFoundException error) {
             if (BuildConfig.DEBUG) {
                 Log.e(TAG, "Failed to retrieve app version.", error);
-            }
-        }
-
-        return (ret == null ? "unknown" : ret);
-    }
-
-    /**
-     * Retrieves the country name
-     *
-     * @param context The application context
-     * @return The country name
-     */
-    private static String getCountry(Context context) {
-        String ret = null;
-        try {
-            ret = context.getResources().getConfiguration().locale.getCountry();
-        } catch (final Throwable t) {
-            if (BuildConfig.DEBUG) {
-                Log.i(TAG, "Failed to retrieve country.", t);
             }
         }
 
