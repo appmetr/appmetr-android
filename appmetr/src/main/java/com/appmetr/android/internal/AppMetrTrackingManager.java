@@ -9,6 +9,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.BuildConfig;
@@ -39,6 +41,7 @@ public class AppMetrTrackingManager {
     protected final RequestParameters mRequestParameters;
     protected final String mUserID;
     protected String mGoogleAID;
+    protected String mFireOsAID;
     protected String mWebServiceCustomUrl;
     protected WebServiceRequest mWebServiceRequest;
     protected boolean mTrackInstallByApp = true;
@@ -618,8 +621,25 @@ public class AppMetrTrackingManager {
                 mGoogleAID = "";
             }
         }
-        if(!mGoogleAID.isEmpty()) {
+        if(!TextUtils.isEmpty(mGoogleAID)) {
             ret.add(new HttpNameValuePair("mobGoogleAid", mGoogleAID));
+        } else {
+            // may be it's Amazon?
+            if(mFireOsAID == null) {
+                try {
+                    mFireOsAID = Settings.Secure.getString(mContextProxy.getContext().getContentResolver(), "advertising_id");
+                    if(mFireOsAID == null)
+                        mFireOsAID = "";
+                } catch(Throwable t) {
+                    if (BuildConfig.DEBUG) {
+                        Log.e(TAG, "Failed to retrieve FIREOS_AID", t);
+                    }
+                    mFireOsAID = "";
+                }
+            }
+            if(!TextUtils.isEmpty(mFireOsAID)) {
+                ret.add(new HttpNameValuePair("mobFireOsAid", mFireOsAID));
+            }
         }
 
         if (mRequestParameters.MAC_ADDRESS != null) {
