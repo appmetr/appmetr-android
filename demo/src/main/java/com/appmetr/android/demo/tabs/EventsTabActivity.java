@@ -95,6 +95,15 @@ public class EventsTabActivity extends AbstractTabActivity {
             }
         });
 
+        Button buttonAttachProperties = (Button) findViewById(R.id.buttonAttach);
+        buttonAttachProperties.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppMetr.attachProperties();
+                logMessage("Properties attached");
+            }
+        });
+
         Button buttonCls = (Button) findViewById(R.id.buttonClear);
         buttonCls.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {

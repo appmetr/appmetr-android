@@ -342,7 +342,7 @@ public class AppMetrTrackingManager {
     protected void trackInstallBroadcast() {
         try {
             JSONObject action = new JSONObject().put("action", "installBroadcast");
-            action.put("$country", ContextProxy.COUNTRY);
+            action.put("$country", Locale.getDefault().getCountry());
 
             track(action);
             flushAndUploadAllEventsAsync();
