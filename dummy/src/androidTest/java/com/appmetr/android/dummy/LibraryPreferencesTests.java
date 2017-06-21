@@ -25,7 +25,7 @@ public class LibraryPreferencesTests extends BaseAppMetrDummyActivityTest {
         // clear command list
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString("AppMetr-Processed-Command-List", "");
-        editor.commit();
+        editor.apply();
 
         // create test instance
         mTestInstance = new LibraryPreferences(mPreferences);
@@ -35,7 +35,7 @@ public class LibraryPreferencesTests extends BaseAppMetrDummyActivityTest {
         // restore command list
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString("AppMetr-Processed-Command-List", mSavedCommandList);
-        editor.commit();
+        editor.apply();
 
         super.tearDown();
     }
