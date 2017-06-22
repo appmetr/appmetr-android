@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 import android.util.Log;
+
+import com.appmetr.android.BuildConfig;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -55,7 +58,7 @@ public class LibraryPreferences {
     /**
      * The version string of AppMetrAndroid library
      */
-    public static final String VERSION_STRING = "1.8.5";
+    public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
 
     /**
      * Time in milliseconds to query remote commands
