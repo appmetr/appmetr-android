@@ -476,6 +476,13 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
+     * Force flush events to file. Flushing execute in new thread
+     */
+    public static void flushLocal() {
+        getInstance().flushAllEventsAsync();
+    }
+
+    /**
      * Force flush events on server. Flushing execute in new thread
      */
     public static void flush() {

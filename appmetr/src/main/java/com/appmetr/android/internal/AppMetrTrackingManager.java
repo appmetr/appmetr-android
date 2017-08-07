@@ -368,6 +368,18 @@ public class AppMetrTrackingManager {
     }
 
     /**
+     * Flushing all events to the disk in new thread
+     */
+    protected void flushAllEventsAsync() {
+        mThreadExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                flushDataImpl();
+            }
+        });
+    }
+
+    /**
      * Flushing all events to the disk and uploading them to server in new thread
      */
     protected void flushAndUploadAllEventsAsync() {
