@@ -125,8 +125,6 @@ public class RequestParameters {
                 ret = DEVICE_ID;
             } else if (MAC_ADDRESS != null) {
                 ret = MAC_ADDRESS;
-            } else {
-                ret = OpenUDIDProxy.getOpenUDID();
             }
         }
 

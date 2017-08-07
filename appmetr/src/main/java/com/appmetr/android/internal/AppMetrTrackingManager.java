@@ -17,7 +17,6 @@ import com.appmetr.android.BuildConfig;
 import com.appmetr.android.internal.command.CommandsManager;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
-import org.OpenUDID.OpenUDID_manager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -82,8 +81,6 @@ public class AppMetrTrackingManager {
      * @param handler Handler
      */
     protected AppMetrTrackingManager(Context context, Handler handler) {
-        // initialize the OpenUDID
-        initOpenUDID(context);
         readManifestMeta(context);
 
         mContextProxy = new ContextProxy(context);
@@ -103,14 +100,6 @@ public class AppMetrTrackingManager {
 
         mRequestParameters = new RequestParameters(context);
         mUserID = mRequestParameters.getUserID();
-    }
-
-    private static void initOpenUDID(Context context) {
-        try {
-            OpenUDID_manager.sync(context);
-        } catch (final Throwable t) {
-            Log.e(TAG, "Failed to init OpenUDID", t);
-        }
     }
 
     private void readManifestMeta(Context context) {
@@ -602,7 +591,6 @@ public class AppMetrTrackingManager {
         ret.add(new HttpNameValuePair("token", mToken));
         ret.add(new HttpNameValuePair("userId", mUserID));
         ret.add(new HttpNameValuePair("timestamp", Long.toString(new Date().getTime())));
-        ret.add(new HttpNameValuePair("mobOpenUDID", OpenUDIDProxy.getOpenUDID()));
 
         ret.add(new HttpNameValuePair("mobDeviceType", Build.MANUFACTURER + "," + Build.MODEL));
         ret.add(new HttpNameValuePair("mobOSVer", Build.VERSION.RELEASE));
