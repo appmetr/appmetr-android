@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 import android.util.Log;
+
+import com.appmetr.android.BuildConfig;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -55,7 +58,7 @@ public class LibraryPreferences {
     /**
      * The version string of AppMetrAndroid library
      */
-    public static final String VERSION_STRING = "1.8.5";
+    public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
 
     /**
      * Time in milliseconds to query remote commands
@@ -126,7 +129,7 @@ public class LibraryPreferences {
             ret = mCurrentBatchID++;
             SharedPreferences.Editor editor = mPreference.edit();
             editor.putInt(BATCH_ID_KEY, mCurrentBatchID.intValue());
-            editor.commit();
+            editor.apply();
         }
         return ret;
     }
@@ -170,7 +173,7 @@ public class LibraryPreferences {
             ret = ++mLastFileIndex;
             SharedPreferences.Editor editor = mPreference.edit();
             editor.putInt(FILE_INDEX_PROP_NAME, ret);
-            editor.commit();
+            editor.apply();
         }
         return ret;
     }
@@ -209,7 +212,7 @@ public class LibraryPreferences {
             String data = new JSONArray(list).toString();
 
             editor.putString(key, Base64.encodeToString(data.getBytes(), Base64.NO_WRAP));
-            editor.commit();
+            editor.apply();
         }
     }
 
@@ -244,7 +247,7 @@ public class LibraryPreferences {
     public void setIsInstallURLTracked(boolean tracked) {
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putBoolean(INSTALL_URL_PROP_NAME, tracked);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -261,7 +264,7 @@ public class LibraryPreferences {
         mIsFirstTrackSessionSent = sent;
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putBoolean(FIRST_TRACK_SESSION_SENTPROP_NAME, mIsFirstTrackSessionSent);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -279,7 +282,7 @@ public class LibraryPreferences {
             mPullCommandsOnResume = value;
             SharedPreferences.Editor editor = mPreference.edit();
             editor.putBoolean(PULL_COMMANDS_ON_REQUEST_PROP_NAME, mPullCommandsOnResume);
-            editor.commit();
+            editor.apply();
 
         }
     }
@@ -301,7 +304,7 @@ public class LibraryPreferences {
             mLastProcessedCommandID = value;
             SharedPreferences.Editor editor = mPreference.edit();
             editor.putString(LAST_PROCESSED_COMMAND_PROP_NAME, mLastProcessedCommandID);
-            editor.commit();
+            editor.apply();
         }
     }
 
@@ -319,7 +322,7 @@ public class LibraryPreferences {
         mSessionDuration = value;
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putLong(SESSION_DURATION_PROP_NAME, mSessionDuration);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -338,6 +341,6 @@ public class LibraryPreferences {
         mSessionDurationCurrent = value;
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putLong(SESSION_DURATION_CURRENT_PROP_NAME, mSessionDurationCurrent);
-        editor.commit();
+        editor.apply();
     }
 }

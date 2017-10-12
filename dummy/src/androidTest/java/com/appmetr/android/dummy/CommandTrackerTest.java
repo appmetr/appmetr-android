@@ -25,7 +25,7 @@ public class CommandTrackerTest extends BaseAppMetrDummyActivityTest {
         // clear command list
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("AppMetr-Processed-Command-List", "");
-        editor.commit();
+        editor.apply();
     }
 
     protected void tearDown() throws Exception {
@@ -33,7 +33,7 @@ public class CommandTrackerTest extends BaseAppMetrDummyActivityTest {
         SharedPreferences preferences = getActivity().getSharedPreferences("AppMetr", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("AppMetr-Processed-Command-List", mSavedCommandList);
-        editor.commit();
+        editor.apply();
 
         super.tearDown();
     }

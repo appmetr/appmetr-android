@@ -9,13 +9,14 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.BuildConfig;
 import com.appmetr.android.internal.command.CommandsManager;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
-import org.OpenUDID.OpenUDID_manager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,6 +40,7 @@ public class AppMetrTrackingManager {
     protected final RequestParameters mRequestParameters;
     protected final String mUserID;
     protected String mGoogleAID;
+    protected String mFireOsAID;
     protected String mWebServiceCustomUrl;
     protected WebServiceRequest mWebServiceRequest;
     protected boolean mTrackInstallByApp = true;
@@ -79,8 +81,6 @@ public class AppMetrTrackingManager {
      * @param handler Handler
      */
     protected AppMetrTrackingManager(Context context, Handler handler) {
-        // initialize the OpenUDID
-        initOpenUDID(context);
         readManifestMeta(context);
 
         mContextProxy = new ContextProxy(context);
@@ -100,14 +100,6 @@ public class AppMetrTrackingManager {
 
         mRequestParameters = new RequestParameters(context);
         mUserID = mRequestParameters.getUserID();
-    }
-
-    private static void initOpenUDID(Context context) {
-        try {
-            OpenUDID_manager.sync(context);
-        } catch (final Throwable t) {
-            Log.e(TAG, "Failed to init OpenUDID", t);
-        }
     }
 
     private void readManifestMeta(Context context) {
@@ -339,7 +331,7 @@ public class AppMetrTrackingManager {
     protected void trackInstallBroadcast() {
         try {
             JSONObject action = new JSONObject().put("action", "installBroadcast");
-            action.put("$country", ContextProxy.COUNTRY);
+            action.put("$country", Locale.getDefault().getCountry());
 
             track(action);
             flushAndUploadAllEventsAsync();
@@ -373,6 +365,18 @@ public class AppMetrTrackingManager {
     protected void flushAndUploadAllEvents() {
         flushDataImpl();
         uploadCache();
+    }
+
+    /**
+     * Flushing all events to the disk in new thread
+     */
+    protected void flushAllEventsAsync() {
+        mThreadExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                flushDataImpl();
+            }
+        });
     }
 
     /**
@@ -599,7 +603,6 @@ public class AppMetrTrackingManager {
         ret.add(new HttpNameValuePair("token", mToken));
         ret.add(new HttpNameValuePair("userId", mUserID));
         ret.add(new HttpNameValuePair("timestamp", Long.toString(new Date().getTime())));
-        ret.add(new HttpNameValuePair("mobOpenUDID", OpenUDIDProxy.getOpenUDID()));
 
         ret.add(new HttpNameValuePair("mobDeviceType", Build.MANUFACTURER + "," + Build.MODEL));
         ret.add(new HttpNameValuePair("mobOSVer", Build.VERSION.RELEASE));
@@ -618,8 +621,25 @@ public class AppMetrTrackingManager {
                 mGoogleAID = "";
             }
         }
-        if(!mGoogleAID.isEmpty()) {
+        if(!TextUtils.isEmpty(mGoogleAID)) {
             ret.add(new HttpNameValuePair("mobGoogleAid", mGoogleAID));
+        } else {
+            // may be it's Amazon?
+            if(mFireOsAID == null) {
+                try {
+                    mFireOsAID = Settings.Secure.getString(mContextProxy.getContext().getContentResolver(), "advertising_id");
+                    if(mFireOsAID == null)
+                        mFireOsAID = "";
+                } catch(Throwable t) {
+                    if (BuildConfig.DEBUG) {
+                        Log.e(TAG, "Failed to retrieve FIREOS_AID", t);
+                    }
+                    mFireOsAID = "";
+                }
+            }
+            if(!TextUtils.isEmpty(mFireOsAID)) {
+                ret.add(new HttpNameValuePair("mobFireOsAid", mFireOsAID));
+            }
         }
 
         if (mRequestParameters.MAC_ADDRESS != null) {

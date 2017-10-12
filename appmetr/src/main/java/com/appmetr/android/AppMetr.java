@@ -175,14 +175,18 @@ public class AppMetr extends AppMetrTrackingManager {
 
             JSONObject action = new JSONObject().put("action", "attachProperties");
             action.put("properties", properties);
-            properties.put("$version", ContextProxy.APP_VERSION);
+            properties.put("$version", ContextProxy.AppVersion);
 
             if (!properties.has("$country")) {
-                properties.put("$country", ContextProxy.COUNTRY);
+                properties.put("$country", Locale.getDefault().getCountry());
             }
 
             if (!properties.has("$language")) {
                 properties.put("$language", Locale.getDefault().getLanguage());
+            }
+
+            if(!properties.has("$locale")) {
+                properties.put("$locale", Locale.getDefault().toString());
             }
 
             getInstance().track(action);
@@ -469,6 +473,13 @@ public class AppMetr extends AppMetrTrackingManager {
      */
     public static boolean verifyPayment(String purchaseInfo, String signature, String privateKey) {
         return getInstance().verifyPaymentAndCheck(purchaseInfo, signature, privateKey);
+    }
+
+    /**
+     * Force flush events to file. Flushing execute in new thread
+     */
+    public static void flushLocal() {
+        getInstance().flushAllEventsAsync();
     }
 
     /**

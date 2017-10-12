@@ -46,4 +46,5 @@
     <string name="info_tab_token">Token</string>
     <string name="info_tab_track_session">Track session by app</string>
     <string name="info_tab_track_install">Track install by app</string>
+    <string name="event_tab_button_attach">Attach</string>
 </resources>
