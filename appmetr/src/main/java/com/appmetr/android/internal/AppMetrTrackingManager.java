@@ -43,7 +43,6 @@ public class AppMetrTrackingManager {
     protected String mFireOsAID;
     protected String mWebServiceCustomUrl;
     protected WebServiceRequest mWebServiceRequest;
-    protected boolean mTrackInstallByApp = true;
 
     protected int mCacheInterval = 0;
     protected int mUploadInterval = 0;
@@ -109,10 +108,6 @@ public class AppMetrTrackingManager {
             if (appInfo != null && appInfo.metaData != null) {
                 if (appInfo.metaData.containsKey("appmetrUrl")) {
                     mWebServiceCustomUrl = appInfo.metaData.getString("appmetrUrl");
-                }
-
-                if (appInfo.metaData.containsKey("trackInstallByApp")) {
-                    mTrackInstallByApp = appInfo.metaData.getBoolean("trackInstallByApp");
                 }
             }
         } catch (final Throwable t) {
@@ -325,37 +320,9 @@ public class AppMetrTrackingManager {
         }
     }
 
-    /**
-     * Method for tracking game event as "installBroadcast" without parameters
-     */
-    protected void trackInstallBroadcast() {
-        try {
-            JSONObject action = new JSONObject().put("action", "installBroadcast");
-            action.put("$country", Locale.getDefault().getCountry());
-
-            track(action);
-            flushAndUploadAllEventsAsync();
-        } catch (JSONException error) {
-            Log.e(TAG, "trackInstallBroadcast failed", error);
-        }
-    }
-
     protected void trackAppStart() {
-        if (!mTrackInstallByApp) {
-            trackAppStartImpl();
-        }
-
         if (mPreferences.getIsPullCommandsOnResume()) {
             pullRemoteCommands();
-        }
-    }
-
-    protected void trackAppStartImpl() {
-        if (mPreferences.isFirstTimeRunning()) {
-            if (!mTrackInstallByApp) {
-                // add installation event
-                trackInstallBroadcast();
-            }
         }
     }
 
