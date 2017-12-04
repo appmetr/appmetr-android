@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class LibraryPreferences {
     private final static String TAG = "LibraryPreferences";
-    protected final static String LIBRARY_NAME = "AppMetrAndroid";
+    private final static String LIBRARY_NAME = "AppMetrAndroid";
 
     /**
      * Time in milliseconds by default after which data is stored to disk. Also
@@ -70,29 +70,34 @@ public class LibraryPreferences {
      */
     public static final int SESSION_MAX_PAUSE_DURATION = 10 * 60 * 1000;
 
-    protected static final String BATCH_ID_KEY = "AppMetr-BatchID";
-    protected static final String FILE_INDEX_PROP_NAME = "AppMetr-FileIndex";
-    protected static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
-    protected static final String INSTALL_URL_PROP_NAME = "AppMetr-InstallURLTracked";
-    protected static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSessionSent";
-    protected static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
-    protected static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
-    protected static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
-    protected static final String SESSION_DURATION_CURRENT_PROP_NAME = "AppMetr-SessionDurationCurrent";
+    private static final String BATCH_ID_KEY = "AppMetr-BatchID";
+    private static final String FILE_INDEX_PROP_NAME = "AppMetr-FileIndex";
+    private static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
+    private static final String INSTALL_URL_PROP_NAME = "AppMetr-InstallURLTracked";
+    private static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSessionSent";
+    private static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
+    private static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
+    private static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
+    private static final String SESSION_DURATION_CURRENT_PROP_NAME = "AppMetr-SessionDurationCurrent";
+    private static final String INSTALL_REFERRER_PROP_NAME = "AppMetr-InstallReferrer";
+    private static final String INSTALL_REFERRER_CLICK_TIMESTAMP_SECONDS_PROP_NAME = "AppMetr-InstallReferrerClickTimestampSeconds";
+    private static final String INSTALL_BEGIN_TIMESTAMP_SECONDS_PROP_NAME = "AppMetr-InstallBeginTimestampSeconds";
 
     /**
      * An application shred preferences
      */
     private final SharedPreferences mPreference;
 
-    protected Integer mCurrentBatchID;
-    protected Integer mLastFileIndex;
-    protected boolean mIsFirstTrackSessionSent;
+    private Integer mCurrentBatchID;
+    private final Object mCurrentBatchIDMutex = new Object();
+    private Integer mLastFileIndex;
+    private final Object mLastFileIndexMutex = new Object();
+    private boolean mIsFirstTrackSessionSent;
 
-    protected boolean mPullCommandsOnResume = false;
-    protected String mLastProcessedCommandID;
-    protected long mSessionDuration;
-    protected long mSessionDurationCurrent;
+    private boolean mPullCommandsOnResume = false;
+    private String mLastProcessedCommandID;
+    private long mSessionDuration;
+    private long mSessionDurationCurrent;
 
     public LibraryPreferences(Context context) {
         this(context.getSharedPreferences(LIBRARY_NAME, Activity.MODE_PRIVATE));
@@ -125,7 +130,7 @@ public class LibraryPreferences {
      */
     public int getNextBatchID() {
         int ret;
-        synchronized (mCurrentBatchID) {
+        synchronized (mCurrentBatchIDMutex) {
             ret = mCurrentBatchID++;
             SharedPreferences.Editor editor = mPreference.edit();
             editor.putInt(BATCH_ID_KEY, mCurrentBatchID.intValue());
@@ -136,7 +141,7 @@ public class LibraryPreferences {
 
     public int getCurrentBatchID() {
         int ret;
-        synchronized (mCurrentBatchID) {
+        synchronized (mCurrentBatchIDMutex) {
             ret = mCurrentBatchID.intValue();
         }
 
@@ -157,7 +162,7 @@ public class LibraryPreferences {
      * Internal use only
      */
     public void _resetBatchID() {
-        synchronized (mCurrentBatchID) {
+        synchronized (mCurrentBatchIDMutex) {
             mCurrentBatchID = 0;
         }
     }
@@ -169,7 +174,7 @@ public class LibraryPreferences {
      */
     public int getNextFileIndex() {
         int ret;
-        synchronized (mLastFileIndex) {
+        synchronized (mLastFileIndexMutex) {
             ret = ++mLastFileIndex;
             SharedPreferences.Editor editor = mPreference.edit();
             editor.putInt(FILE_INDEX_PROP_NAME, ret);
@@ -341,6 +346,36 @@ public class LibraryPreferences {
         mSessionDurationCurrent = value;
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putLong(SESSION_DURATION_CURRENT_PROP_NAME, mSessionDurationCurrent);
+        editor.apply();
+    }
+
+    public String getInstallReferrer() {
+        return mPreference.getString(INSTALL_REFERRER_PROP_NAME, "");
+    }
+
+    public void setInstallReferrer(String installReferrer) {
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.putString(INSTALL_REFERRER_PROP_NAME, installReferrer);
+        editor.apply();
+    }
+
+    public long getInstallReferrerClickTimestampSeconds() {
+        return mPreference.getLong(INSTALL_REFERRER_CLICK_TIMESTAMP_SECONDS_PROP_NAME, 0);
+    }
+
+    public void setInstallReferrerClickTimestampSeconds(long timestampSeconds) {
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.putLong(INSTALL_REFERRER_CLICK_TIMESTAMP_SECONDS_PROP_NAME, timestampSeconds);
+        editor.apply();
+    }
+
+    public long getInstallBeginTimestampSeconds() {
+        return mPreference.getLong(INSTALL_BEGIN_TIMESTAMP_SECONDS_PROP_NAME, 0);
+    }
+
+    public void setInstallBeginTimestampSeconds(long timestampSeconds) {
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.putLong(INSTALL_BEGIN_TIMESTAMP_SECONDS_PROP_NAME, timestampSeconds);
         editor.apply();
     }
 }
