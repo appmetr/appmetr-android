@@ -72,6 +72,7 @@ public class AppMetrTrackingManager {
     protected final static String METHOD_VERIFY_PAYMENT = "server.verifyPayment";
 
     protected CommandsManager mCommandsManager;
+    private InstallReferrerConnectionHandler mInstallReferrerConnectionHandler;
 
     /**
      * Standard constructor. Initializes library with a specified activity.
@@ -99,6 +100,11 @@ public class AppMetrTrackingManager {
 
         mRequestParameters = new RequestParameters(context);
         mUserID = mRequestParameters.getUserID();
+
+        if(!mPreferences.getIsFirstTrackSessionSent()) {
+            mInstallReferrerConnectionHandler = new InstallReferrerConnectionHandler();
+            mInstallReferrerConnectionHandler.connect(context, mPreferences);
+        }
     }
 
     private void readManifestMeta(Context context) {
@@ -293,28 +299,51 @@ public class AppMetrTrackingManager {
      */
     protected void trackSessionImpl(JSONObject properties) {
         try {
-            JSONObject action = new JSONObject().put("action", "trackSession");
-
-            if (properties == null) {
-                properties = new JSONObject();
-            }
+            final JSONObject action = new JSONObject().put("action", "trackSession");
+            final JSONObject finalProperties = properties != null ? properties : new JSONObject();
 
             long duration = mPreferences.getSessionDuration() / 1000;
             mPreferences.setSessionDuration(0);
-            if (mPreferences.getIsFirstTrackSessionSent() && duration <= 0)
-                return; // not first launch and session duration is empty, ignoring
-            if(!mPreferences.getIsFirstTrackSessionSent())
-                duration = -1; // first launch, track install
 
-            properties.put("$duration", duration);
+            if(!mPreferences.getIsFirstTrackSessionSent()) { // track install
+                if(mInstallReferrerConnectionHandler == null) { // must be false always
+                    Log.w(TAG, "Install referrer not initialized on first launch. Creating new...");
+                    mInstallReferrerConnectionHandler = new InstallReferrerConnectionHandler();
+                    mInstallReferrerConnectionHandler.connect(mContextProxy.getContext(), mPreferences);
+                }
+                if (!mInstallReferrerConnectionHandler.onFinishConnection(new Runnable() {
 
-            action.put("properties", properties);
+                    @Override
+                    public void run() {
+                        try {
+                            finalProperties.put("$duration", -1); // first launch, track install
+                            String installReferrer = mPreferences.getInstallReferrer();
+                            if(!TextUtils.isEmpty(installReferrer))
+                                finalProperties.put("install_referrer", installReferrer);
+                            long referrerClickTimestamp = mPreferences.getInstallReferrerClickTimestampSeconds();
+                            if(referrerClickTimestamp > 0)
+                                finalProperties.put("referrer_click_timestamp_seconds", referrerClickTimestamp);
+                            long  installBeginTimestamp = mPreferences.getInstallBeginTimestampSeconds();
+                            if(installBeginTimestamp > 0)
+                                finalProperties.put("install_begin_timestamp_seconds", installBeginTimestamp);
+                            action.put("properties", finalProperties);
+                            track(action);
+                            flushAndUploadAllEventsAsync();
+                            mPreferences.setIsFirstTrackSessionSent(true);
+                        } catch (JSONException error) {
+                            Log.e(TAG, "trackSession on first launch failed", error);
+                        }
+                    }
+                })) {
+                    Log.w(TAG, "Install referrer already send install event");
+                }
+                return;
+            } else if(duration <= 0)
+                return;// not first launch and session duration is empty, ignoring
+
+            finalProperties.put("$duration", duration);
+            action.put("properties", finalProperties);
             track(action);
-
-            if (!mPreferences.getIsFirstTrackSessionSent()) {
-                flushAndUploadAllEventsAsync();
-                mPreferences.setIsFirstTrackSessionSent(true);
-            }
         } catch (JSONException error) {
             Log.e(TAG, "trackSession failed", error);
         }
