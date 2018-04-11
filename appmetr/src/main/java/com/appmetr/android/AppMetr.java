@@ -458,6 +458,7 @@ public class AppMetr extends AppMetrTrackingManager {
             action.put("userId", userId);
 
             getInstance().track(action);
+            getInstance().flushAndUploadAllEventsAsync();
         } catch (JSONException error) {
             Log.e(TAG, "Identify failed", error);
         }
