@@ -375,7 +375,7 @@ public class AppMetrTrackingManager {
      * Flushing all events to the disk in new thread
      */
     protected void flushAllEventsAsync() {
-        if(mThreadExecutor != null) {
+        if(mThreadExecutor != null && !mThreadExecutor.isShutdown()) {
             mThreadExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -392,7 +392,7 @@ public class AppMetrTrackingManager {
      * Flushing all events to the disk and uploading them to server in new thread
      */
     protected void flushAndUploadAllEventsAsync() {
-        if(mThreadExecutor != null) {
+        if(mThreadExecutor != null && !mThreadExecutor.isShutdown()) {
             mThreadExecutor.execute(new Runnable() {
                 @Override public void run() {
                     flushDataImpl();
@@ -672,7 +672,7 @@ public class AppMetrTrackingManager {
     }
 
     protected void pullRemoteCommands() {
-        if (mThreadExecutor == null) {
+        if (mThreadExecutor == null || mThreadExecutor.isShutdown()) {
             mPreferences.setPullCommandsOnResume(true);
         } else {
             mPreferences.setPullCommandsOnResume(false);
