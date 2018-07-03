@@ -73,6 +73,8 @@ public class AppMetrTrackingManager {
 
     protected CommandsManager mCommandsManager;
     private InstallReferrerConnectionHandler mInstallReferrerConnectionHandler;
+    private boolean mFlushEventsOnResume;
+    private boolean mFlushAndUploadEventsOnResume;
 
     /**
      * Standard constructor. Initializes library with a specified activity.
@@ -162,6 +164,12 @@ public class AppMetrTrackingManager {
         if (mThreadExecutor == null) {
             mThreadExecutor = Executors.newSingleThreadExecutor();
         }
+        if(mFlushAndUploadEventsOnResume)
+            flushAndUploadAllEventsAsync();
+        else if(mFlushEventsOnResume)
+            flushAllEventsAsync();
+        mFlushEventsOnResume = false;
+        mFlushAndUploadEventsOnResume = false;
     }
 
     protected String getWebServiceUrl() {
@@ -367,24 +375,34 @@ public class AppMetrTrackingManager {
      * Flushing all events to the disk in new thread
      */
     protected void flushAllEventsAsync() {
-        mThreadExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                flushDataImpl();
-            }
-        });
+        if(mThreadExecutor != null && !mThreadExecutor.isShutdown()) {
+            mThreadExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    flushDataImpl();
+                }
+            });
+        } else {
+            mFlushEventsOnResume = true;
+        }
+
     }
 
     /**
      * Flushing all events to the disk and uploading them to server in new thread
      */
     protected void flushAndUploadAllEventsAsync() {
-        mThreadExecutor.execute(new Runnable() {
-            @Override public void run() {
-                flushDataImpl();
-                uploadCache();
-            }
-        });
+        if(mThreadExecutor != null && !mThreadExecutor.isShutdown()) {
+            mThreadExecutor.execute(new Runnable() {
+                @Override public void run() {
+                    flushDataImpl();
+                    uploadCache();
+                }
+            });
+        } else {
+            mFlushAndUploadEventsOnResume = true;
+        }
+
     }
 
     /**
@@ -654,7 +672,7 @@ public class AppMetrTrackingManager {
     }
 
     protected void pullRemoteCommands() {
-        if (mThreadExecutor == null) {
+        if (mThreadExecutor == null || mThreadExecutor.isShutdown()) {
             mPreferences.setPullCommandsOnResume(true);
         } else {
             mPreferences.setPullCommandsOnResume(false);
