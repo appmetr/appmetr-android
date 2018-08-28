@@ -12,9 +12,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.BuildConfig;
-import com.appmetr.android.internal.command.CommandsManager;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
 import org.json.JSONException;
@@ -68,10 +66,8 @@ public class AppMetrTrackingManager {
     private final Lock mUploadCacheLock = new ReentrantLock();
 
     protected final static String METHOD_TRACK = "server.track";
-    protected final static String METHOD_GET_COMMANDS = "server.getCommands";
     protected final static String METHOD_VERIFY_PAYMENT = "server.verifyPayment";
 
-    protected CommandsManager mCommandsManager;
     private InstallReferrerConnectionHandler mInstallReferrerConnectionHandler;
     private boolean mFlushEventsOnResume;
     private boolean mFlushAndUploadEventsOnResume;
@@ -80,9 +76,8 @@ public class AppMetrTrackingManager {
      * Standard constructor. Initializes library with a specified activity.
      *
      * @param context Application context
-     * @param handler Handler
      */
-    protected AppMetrTrackingManager(Context context, Handler handler) {
+    protected AppMetrTrackingManager(Context context) {
         readManifestMeta(context);
 
         mContextProxy = new ContextProxy(context);
@@ -93,10 +88,6 @@ public class AppMetrTrackingManager {
         mCacheInterval = LibraryPreferences.DEFAULT_CACHE_TIME;
         mUploadInterval = LibraryPreferences.DEFAULT_UPLOAD_TIME;
         mMaxFileSize = LibraryPreferences.DEFAULT_BATCH_SIZE;
-
-        // initialize commands
-        mCommandsManager = new CommandsManager(mPreferences);
-        mCommandsManager.setCommandHandler(handler);
 
         mFileList = mPreferences.getFileList();
 
@@ -145,14 +136,6 @@ public class AppMetrTrackingManager {
                     flushData();
                 }
             }, mCacheInterval, mCacheInterval);
-
-            // starting remote commands timer
-            mTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    sentQueryRemoteCommandList();
-                }
-            }, LibraryPreferences.DEFAULT_REMOTE_COMMAND_TIME, LibraryPreferences.DEFAULT_REMOTE_COMMAND_TIME);
         }
     }
 
@@ -206,7 +189,6 @@ public class AppMetrTrackingManager {
         if (!mStarted) {
             initThreadExecutor();
             createTimers();
-            trackAppStart();
             startSession();
 
             mStartTime = new Date().getTime();
@@ -251,7 +233,6 @@ public class AppMetrTrackingManager {
         if (mToken != null && !mStarted) {
             initThreadExecutor();
             createTimers();
-            trackAppStart();
 
             // If application was paused more than MAX time
             if((System.currentTimeMillis() - mStartTime) >= LibraryPreferences.SESSION_MAX_PAUSE_DURATION) {
@@ -354,12 +335,6 @@ public class AppMetrTrackingManager {
             track(action);
         } catch (JSONException error) {
             Log.e(TAG, "trackSession failed", error);
-        }
-    }
-
-    protected void trackAppStart() {
-        if (mPreferences.getIsPullCommandsOnResume()) {
-            pullRemoteCommands();
         }
     }
 
@@ -669,64 +644,6 @@ public class AppMetrTrackingManager {
         }
 
         return ret;
-    }
-
-    protected void pullRemoteCommands() {
-        if (mThreadExecutor == null || mThreadExecutor.isShutdown()) {
-            mPreferences.setPullCommandsOnResume(true);
-        } else {
-            mPreferences.setPullCommandsOnResume(false);
-            Runnable task = new Runnable() {
-                public void run() {
-                    sentQueryRemoteCommandList();
-                }
-            };
-
-            mThreadExecutor.execute(task);
-        }
-    }
-
-    protected void sentQueryRemoteCommandList() {
-        try {
-            mCommandsManager.sentQueryRemoteCommandList(getRequestParameters(METHOD_GET_COMMANDS), mWebServiceRequest);
-        } catch (final Throwable t) {
-            Log.e(TAG, "#sentQueryRemoteCommandList failed s", t);
-        }
-    }
-
-    /**
-     * Processing the remote command, received from server.
-     *
-     * @return The number of successful processed commands
-     */
-    @Deprecated
-    public void processRemoteCommands() {
-        mCommandsManager.processCommands();
-    }
-
-    /**
-     * Sets the listener for this object
-     *
-     * @param lister The new listener object or null
-     * @see #getListener()
-     */
-    public void setListener(AppMetrListener lister) {
-        mCommandsManager.setListener(lister);
-    }
-
-    /**
-     * @return The current AppMetr listener object or null
-     * @see #setListener(com.appmetr.android.AppMetrListener)
-     */
-    public AppMetrListener getListener() {
-        return mCommandsManager.getListener();
-    }
-
-    /**
-     * @return The manager or remote commands
-     */
-    public CommandsManager getCommandsManager() {
-        return mCommandsManager;
     }
 
     protected boolean verifyPaymentAndCheck(String purchaseInfo, String receipt, String privateKey) {

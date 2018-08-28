@@ -65,32 +65,6 @@ public class TrackTest extends BaseAppMetrDummyActivityTest {
         assertNotNull("Invalid property value", propertyValue.compareTo("prop-value"));
     }
 
-    public void testTrackSession() throws Exception {
-        AppMetrDirtyHack testLibrary;
-        testLibrary = new AppMetrDirtyHack(getActivity());
-        testLibrary.initialize("TestThisLibrary");
-        ArrayList<JSONObject> eventList = testLibrary.getDirtyEventList();
-
-        // test 1
-        AppMetrDirtyHack.trackSession();
-        JSONObject sessionOne = eventList.get(eventList.size() - 1);
-        String actionName = sessionOne.getString("action");
-        assertNotNull("Invalid action", actionName.compareTo("trackSession"));
-        assertNotNull("Missing timestamp", sessionOne.get("timestamp"));
-
-        // test 2
-        AppMetrDirtyHack.trackSession(this.anyProperties());
-        JSONObject sessionTwo = eventList.get(eventList.size() - 1);
-
-        actionName = sessionTwo.getString("action");
-        assertNotNull("Invalid action", actionName.compareTo("trackSession"));
-        assertNotNull("Missing timestamp", sessionOne.get("timestamp"));
-
-        JSONObject propertiesObject = (JSONObject) sessionTwo.get("properties");
-        String propertyValue = (String) propertiesObject.get("prop-key");
-        assertNotNull("Invalid property value", propertyValue.compareTo("prop-value"));
-    }
-
     public void testTrackLevel() throws Exception {
         AppMetrDirtyHack testLibrary;
         testLibrary = new AppMetrDirtyHack(getActivity());

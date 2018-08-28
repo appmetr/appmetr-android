@@ -7,11 +7,8 @@ package com.appmetr.android.dummy;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.util.Base64;
-import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.dummy.utils.AppMetrDirtyHack;
 import com.appmetr.android.dummy.utils.BaseAppMetrDummyActivityTest;
-import com.appmetr.android.internal.command.data.RemoteCommandPacket;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -194,38 +191,5 @@ public class AppMetrTest extends BaseAppMetrDummyActivityTest {
         AppMetrDirtyHack.onPause();
 
         assertEquals("Failed to track installation URL", 0, testLibrary.getDirtyFileList().size());
-    }
-
-    public void testRemoteCommandPacket() throws JSONException, DataFormatException {
-        AppMetrDirtyHack testLibrary = createTestApi();
-
-        Date now = new Date();
-        JSONObject object = new JSONObject(
-                "{\"status\":\"OK\", \"commands\":["
-                        + "{\"commandId\":\"cmd20120824112718\",\"sendDate\":0, \"type\":\"promo.realMoneyPurchaseBonus\","
-                        + "\"status\":\"sent\", \"conditions\":{\"validTo\":"
-                        + (now.getTime() + 100000)
-                        + "},"
-                        + "\"properties\":{\"prop1\":10, \"prop2\":[1,2,3], \"prop3\":true, \"prop4\" : {\"sub1\":1, \"sub2\":2}}},"
-                        + "{\"commandId\":\"cmd30120824112718\",\"sendDate\":0, \"type\":\"promo.spentCurrencyDiscount\", \"status\":\"sent\","
-                        + "\"conditions\": {\"validTo\":"+(now.getTime() + 100000) + "}}]," + "\"isLastCommandsBatch\":true}");
-
-        testLibrary.dirtyProcessPacket(new RemoteCommandPacket(object, null));
-
-        assertEquals("Invalid numbers o commands", 2, testLibrary.dirtyGetCommandsManager().getNumCommands());
-        assertEquals("Event list must be empty", 0, testLibrary.getDirtyEventList().size());
-    }
-
-    public void testSendQueryRemoteCommands() throws DataFormatException {
-        AppMetrDirtyHack testLibrary = createTestApi();
-
-        testLibrary.setListener(new AppMetrListener() {
-            @Override
-            public void executeCommand(JSONObject command) throws Throwable {
-            }
-        });
-
-        testLibrary.dirtySentQueryRemoteCommandList();
-        assertTrue("Command list is not empty", testLibrary.dirtyGetCommandsManager().getNumCommands() == 0);
     }
 }

@@ -3,8 +3,6 @@ package com.appmetr.android.dummy.utils;
 import android.app.Activity;
 import com.appmetr.android.AppMetr;
 import com.appmetr.android.internal.Utils;
-import com.appmetr.android.internal.command.CommandsManager;
-import com.appmetr.android.internal.command.data.RemoteCommandPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,7 +16,7 @@ public class AppMetrDirtyHack extends AppMetr {
     public static final String TEST_TOKEN = "demo_token";
 
     public AppMetrDirtyHack(Activity activity) throws DataFormatException {
-        super(activity, null);
+        super(activity);
         msInstance = this;
 
         initialize(TEST_TOKEN);
@@ -29,7 +27,7 @@ public class AppMetrDirtyHack extends AppMetr {
     }
 
     public AppMetrDirtyHack(String tocken, Activity activity) throws DataFormatException {
-        super(activity, null);
+        super(activity);
 
         msInstance = this;
 
@@ -252,17 +250,5 @@ public class AppMetrDirtyHack extends AppMetr {
 
     public void dirtySleepLibrary() {
         sleepLibrary();
-    }
-
-    public void dirtyProcessPacket(RemoteCommandPacket packet) {
-        mCommandsManager.processPacket(packet);
-    }
-
-    public CommandsManager dirtyGetCommandsManager() {
-        return mCommandsManager;
-    }
-
-    public void dirtySentQueryRemoteCommandList() {
-        sentQueryRemoteCommandList();
     }
 }

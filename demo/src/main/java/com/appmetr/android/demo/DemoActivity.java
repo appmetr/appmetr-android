@@ -6,13 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TabHost;
 import com.appmetr.android.AppMetr;
-import com.appmetr.android.AppMetrListener;
 import com.appmetr.android.demo.tabs.CasesTabActivity;
 import com.appmetr.android.demo.tabs.CustomTabActivity;
 import com.appmetr.android.demo.tabs.EventsTabActivity;
 import com.appmetr.android.demo.tabs.InfoTabActivity;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,43 +79,7 @@ public class DemoActivity extends TabActivity {
     }
 
     private void initializeAppMetr() throws DataFormatException {
-        AppMetr.setup(token, this, getAppMetrListener());
-    }
-
-    private AppMetrListener getAppMetrListener() {
-        return new AppMetrListener() {
-            @Override public void executeCommand(JSONObject command) throws Throwable {
-                String type = command.getString("type");
-                String commandId = command.getString("commandId");
-                JSONObject properties = command.getJSONObject("properties");
-
-                logMessage(String.format("Receive command \"%1$s\"", type));
-
-                if ("setOptions".equals(type)) {
-                    JSONArray options = properties.has("options") ? properties.getJSONArray("options") : new JSONArray();
-
-                    JSONArray resultOptions = new JSONArray();
-                    for (int optionIndex = 0; optionIndex < options.length(); optionIndex++) {
-                        JSONObject option = options.getJSONObject(optionIndex);
-
-                        String key = option.keys().next().toString();   //Cause 1 array element has only 1 option
-                        Object value = option.get(key);
-
-                        optionValues.put(key, value);
-
-                        JSONObject resultOption = new JSONObject();
-                        resultOption.put("option", key);
-                        resultOption.put("oldValue", value);
-                        resultOption.put("requestedValue", value);
-                        resultOption.put("currentValue", value);
-
-                        resultOptions.put(resultOption);
-                    }
-
-                    AppMetr.trackOptions(commandId, resultOptions);
-                }
-            }
-        };
+        AppMetr.setup(token, this);
     }
 
     public void logMessage(String message) {

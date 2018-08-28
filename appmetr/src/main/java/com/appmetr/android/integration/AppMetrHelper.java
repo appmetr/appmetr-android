@@ -153,28 +153,6 @@ public class AppMetrHelper {
     }
 
     /**
-     * Method for tracking options
-     */
-    public static void trackOptions(String commandId, String serializedOptions) {
-        try {
-            AppMetr.trackOptions(commandId, new JSONArray(serializedOptions));
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackOptions failed", error);
-        }
-    }
-
-    /**
-     * Method for tracking options with error
-     */
-    public static void trackOptionsError(String commandId, String serializedOptions, String errorCode, String errorMessage) {
-        try {
-            AppMetr.trackOptionsError(commandId, new JSONArray(serializedOptions), errorCode, errorMessage);
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackOptions failed", error);
-        }
-    }
-
-    /**
      * Method for tracking experiment start
      */
     public static void trackExperimentStart(String experiment, String group) {

@@ -37,19 +37,11 @@
         android:text="@string/button_flush" />
 
     <Button
-        android:id="@+id/buttonPull"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_below="@id/editEventName"
-        android:layout_toRightOf="@id/buttonFlush"
-        android:text="@string/button_pull" />
-
-    <Button
         android:id="@+id/buttonTrackSession"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:layout_below="@id/editEventName"
-        android:layout_toRightOf="@id/buttonPull"
+        android:layout_toRightOf="@id/buttonFlush"
         android:text="@string/event_tab_button_track_session" />
 
     <Button
