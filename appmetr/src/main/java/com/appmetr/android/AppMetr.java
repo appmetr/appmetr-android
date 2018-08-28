@@ -47,26 +47,9 @@ public class AppMetr extends AppMetrTrackingManager {
      * Standard constructor. Initializes library with a specified activity.
      *
      * @param context Application context
-     * @param handler Handler
      */
-    protected AppMetr(Context context, Handler handler) {
-        super(context, handler);
-    }
-
-    /**
-     * Setting up libraries data with remote command handler in running(current)
-     * thread.
-     *
-     * @param token    parameter which is needed for data upload.
-     * @param context  The application context to initialize AppMetr library
-     * @param listener the listener object to process remote commands from server or
-     *                 null
-     * @throws DataFormatException - library throws exception if token is not valid
-     * @see #setListener(AppMetrListener)
-     */
-    public static void setup(String token, Context context, AppMetrListener listener)
-            throws DataFormatException, SecurityException {
-        setup(token, context, listener, new Handler());
+    protected AppMetr(Context context) {
+        super(context);
     }
 
     /**
@@ -75,14 +58,9 @@ public class AppMetr extends AppMetrTrackingManager {
      *
      * @param token    parameter which is needed for data upload.
      * @param context  The application context to initialize AppMetr library
-     * @param listener the listener object to process remote commands from server or
-     *                 null
-     * @param handler  an event handler for remote command
      * @throws DataFormatException - library throws exception if token is not valid
-     * @see #setListener(AppMetrListener)
-     * @deprecated in 1.5
      */
-    public static void setup(String token, Context context, AppMetrListener listener, Handler handler) throws DataFormatException, SecurityException {
+    public static void setup(String token, Context context) throws DataFormatException, SecurityException {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "#setup");
         }
@@ -91,8 +69,7 @@ public class AppMetr extends AppMetrTrackingManager {
         msLibraryInitializationLock.lock();
 
         if (msInstance == null) {
-            msInstance = new AppMetr(context, handler);
-            msInstance.setListener(listener);
+            msInstance = new AppMetr(context);
             msInstance.initialize(token);
         } else if (BuildConfig.DEBUG) {
             Log.d(TAG, "setup failed. Library already initialized.");
@@ -100,21 +77,6 @@ public class AppMetr extends AppMetrTrackingManager {
 
         // releasing thread lock
         msLibraryInitializationLock.unlock();
-    }
-
-    /**
-     * Static method for additional setup libraries data. Must be valid
-     * parameter token.
-     *
-     * @param token   parameter which is needed for data upload.
-     * @param context The application context to initialize AppMetr library
-     * @throws DataFormatException library throws exception if token is not valid
-     * @deprecated in 1.2. Use
-     *             {@link #setup(String, Context, AppMetrListener)}
-     *             instead
-     */
-    public static void setup(String token, Context context) throws DataFormatException {
-        setup(token, context, null);
     }
 
     /**
@@ -343,59 +305,6 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Track options
-     *
-     * @param commandId Command id, which was in setOption command
-     * @param options   Array of option values. Each element must be object with fields
-     *                  option - option name
-     *                  oldValue - old option value
-     *                  requestedValue - value of option in setOption command
-     *                  currentValue - result value
-     */
-    public static void trackOptions(String commandId, JSONArray options) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackOptions");
-            action.put("commandId", commandId);
-            action.put("status", "OK");
-            action.put("options", options);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackOptions failed", error);
-        }
-    }
-
-    /**
-     * Track options
-     *
-     * @param commandId    Command id, which was in setOption command
-     * @param options      Array of option values. Each element must be object with fields
-     *                     option - option name
-     *                     oldValue - old option value
-     *                     requestedValue - value of option in setOption command
-     *                     currentValue - result value
-     * @param errorCode    Error code
-     * @param errorMessage Error message
-     */
-    public static void trackOptionsError(String commandId, JSONArray options, String errorCode, String errorMessage) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackOptions");
-            action.put("commandId", commandId);
-            action.put("status", "ERROR");
-            action.put("options", options);
-
-            JSONObject error = new JSONObject().put("code", errorCode);
-            error.put("message", errorMessage);
-
-            action.put("error", error);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackOptions failed", error);
-        }
-    }
-
-    /**
      * Track experiment
      *
      * @param experiment Experiment name, which is to be started
@@ -491,28 +400,10 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Adds request for remote commands
-     */
-    public static void pullCommands() {
-        getInstance().pullRemoteCommands();
-    }
-
-    /**
      * @return The user unique identifier used by this library.
      */
     public static String getUserId() {
         return getInstance().mUserID;
-    }
-
-    /**
-     * Sets the handler for remote command executor
-     *
-     * @param handler
-     */
-    public static void setCommandHandler(Handler handler) {
-        synchronized (getInstance().mCommandsManager) {
-            msInstance.mCommandsManager.setCommandHandler(handler);
-        }
     }
 
     /**

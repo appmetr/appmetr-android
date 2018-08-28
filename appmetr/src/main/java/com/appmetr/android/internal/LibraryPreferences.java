@@ -38,8 +38,6 @@ public class LibraryPreferences {
      * Max size of token for application.
      */
     public static final int TOKEN_MAX_SIZE = 50;
-    /** URL address of web service. */
-
     /**
      * Default server address which use in production mode
      */
@@ -61,11 +59,6 @@ public class LibraryPreferences {
     public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
 
     /**
-     * Time in milliseconds to query remote commands
-     */
-    public static final int DEFAULT_REMOTE_COMMAND_TIME = 70000;
-
-    /**
      * Time in milliseconds for max pause state, after which starts new session
      */
     public static final int SESSION_MAX_PAUSE_DURATION = 10 * 60 * 1000;
@@ -75,8 +68,6 @@ public class LibraryPreferences {
     private static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
     private static final String INSTALL_URL_PROP_NAME = "AppMetr-InstallURLTracked";
     private static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSessionSent";
-    private static final String PULL_COMMANDS_ON_REQUEST_PROP_NAME = "AppMetr-PullCommandsOnResume";
-    private static final String LAST_PROCESSED_COMMAND_PROP_NAME = "AppMetr-LastProcessedCommandID";
     private static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
     private static final String SESSION_DURATION_CURRENT_PROP_NAME = "AppMetr-SessionDurationCurrent";
     private static final String INSTALL_REFERRER_PROP_NAME = "AppMetr-InstallReferrer";
@@ -94,8 +85,6 @@ public class LibraryPreferences {
     private final Object mLastFileIndexMutex = new Object();
     private boolean mIsFirstTrackSessionSent;
 
-    private boolean mPullCommandsOnResume = false;
-    private String mLastProcessedCommandID;
     private long mSessionDuration;
     private long mSessionDurationCurrent;
 
@@ -108,8 +97,6 @@ public class LibraryPreferences {
         mCurrentBatchID = Integer.valueOf(getFirstBatchID());
         mLastFileIndex = Integer.valueOf(mPreference.getInt(FILE_INDEX_PROP_NAME, 0));
         mIsFirstTrackSessionSent = getIsFirstTrackSessionSent();
-        mPullCommandsOnResume = mPreference.getBoolean(PULL_COMMANDS_ON_REQUEST_PROP_NAME, false);
-        mLastProcessedCommandID = mPreference.getString(LAST_PROCESSED_COMMAND_PROP_NAME, null);
         mSessionDuration = mPreference.getLong(SESSION_DURATION_PROP_NAME, 0);
         mSessionDurationCurrent = mPreference.getLong(SESSION_DURATION_CURRENT_PROP_NAME, 0);
     }
@@ -270,47 +257,6 @@ public class LibraryPreferences {
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putBoolean(FIRST_TRACK_SESSION_SENTPROP_NAME, mIsFirstTrackSessionSent);
         editor.apply();
-    }
-
-    /**
-     * Returns whether first trackSession already sent, otherwise returns false
-     */
-    public boolean getIsPullCommandsOnResume() {
-        return mPullCommandsOnResume;
-    }
-
-    /**
-     * Sets whether first trackSession already sent or not
-     */
-    public void setPullCommandsOnResume(boolean value) {
-        if (mPullCommandsOnResume != value) {
-            mPullCommandsOnResume = value;
-            SharedPreferences.Editor editor = mPreference.edit();
-            editor.putBoolean(PULL_COMMANDS_ON_REQUEST_PROP_NAME, mPullCommandsOnResume);
-            editor.apply();
-
-        }
-    }
-
-    /**
-     * @return An unique identifier of last processed command
-     */
-    public String getLastProcessedCommandID() {
-        return mLastProcessedCommandID;
-    }
-
-    /**
-     * Sets an unique identifier of last processed command
-     *
-     * @param value An unique identifier of last processed command
-     */
-    public void setLastProcessedCommandID(String value) {
-        if (mLastProcessedCommandID == null || !mLastProcessedCommandID.equals(value)) {
-            mLastProcessedCommandID = value;
-            SharedPreferences.Editor editor = mPreference.edit();
-            editor.putString(LAST_PROCESSED_COMMAND_PROP_NAME, mLastProcessedCommandID);
-            editor.apply();
-        }
     }
 
     /**

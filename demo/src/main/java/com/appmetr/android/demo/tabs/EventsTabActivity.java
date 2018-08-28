@@ -67,14 +67,6 @@ public class EventsTabActivity extends AbstractTabActivity {
             }
         });
 
-        Button buttonPull = (Button) findViewById(R.id.buttonPull);
-        buttonPull.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
-                AppMetr.pullCommands();
-                logMessage("Commands pulled");
-            }
-        });
-
         Button buttonTrackSession = (Button) findViewById(R.id.buttonTrackSession);
         buttonTrackSession.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
