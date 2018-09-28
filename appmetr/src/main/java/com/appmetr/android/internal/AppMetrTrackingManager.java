@@ -12,6 +12,8 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.appmetr.android.AppmetrConstants;
 import com.appmetr.android.BuildConfig;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
@@ -269,7 +271,19 @@ public class AppMetrTrackingManager {
      */
     public void track(JSONObject event) {
         try {
-            event.put("timestamp", new Date());
+            if (event.has("properties")) {
+                JSONObject properties = event.optJSONObject("properties");
+                if (properties != null && properties.has(AppmetrConstants.PROPERTY_TIMESTAMP)) {
+                    Object timestamp = properties.get(AppmetrConstants.PROPERTY_TIMESTAMP);
+                    if (timestamp instanceof Date || timestamp instanceof Long) {
+                        event.put(AppmetrConstants.PROPERTY_TIMESTAMP, timestamp);
+                        properties.remove(AppmetrConstants.PROPERTY_TIMESTAMP);
+                    }
+                }
+
+            }
+            if (!event.has(AppmetrConstants.PROPERTY_TIMESTAMP) || (!(event.get(AppmetrConstants.PROPERTY_TIMESTAMP) instanceof Long) && !(event.get(AppmetrConstants.PROPERTY_TIMESTAMP) instanceof Date)))
+                event.put(AppmetrConstants.PROPERTY_TIMESTAMP, new Date());
             JSONObject convertedEvent = Utils.convertDate(event);
             synchronized (mEventList) {
                 mEventList.add(convertedEvent);

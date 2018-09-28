@@ -8,7 +8,11 @@ import com.appmetr.android.dummy.utils.AppMetrDirtyHack;
 import com.appmetr.android.dummy.utils.BaseAppMetrDummyActivityTest;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class TrackTest extends BaseAppMetrDummyActivityTest {
     final static double EPSILON = 0.000001;
@@ -171,5 +175,38 @@ public class TrackTest extends BaseAppMetrDummyActivityTest {
         JSONObject properties = (JSONObject) actionTwo.get("properties");
         String propertyValue = properties.getString("prop-key");
         assertNotNull("Invalid property value", propertyValue.compareTo("prop-value"));
+    }
+
+    public void testSetTimestamp() throws Exception {
+        AppMetrDirtyHack testLibrary = new AppMetrDirtyHack(getActivity());
+        testLibrary.initialize("TestThisLibrary");
+        ArrayList<JSONObject> eventList = testLibrary.getDirtyEventList();
+
+        // test Date as timestamp
+        Date testDate1 = new GregorianCalendar(2017, Calendar.FEBRUARY, 17).getTime();
+        JSONObject propertiesLong = new JSONObject().put("timestamp", testDate1.getTime());
+        AppMetrDirtyHack.trackEvent("customTimestamp1", propertiesLong);
+        JSONObject resultsLong = eventList.get(eventList.size() - 1);
+        assertEquals("Invalid action", resultsLong.getString("action"), "trackEvent");
+        assertEquals("Invalid event name", resultsLong.getString("event"), "customTimestamp1");
+        assertEquals("Invalid custom date", resultsLong.getLong("timestamp"), testDate1.getTime());
+
+        // test Date as Date
+        Date testDate2 = new GregorianCalendar(2018, Calendar.MARCH, 1).getTime();
+        JSONObject propertiesDate = new JSONObject().put("timestamp", testDate2);
+        AppMetrDirtyHack.trackLevel(5, propertiesDate);
+        JSONObject resultsDate = eventList.get(eventList.size() - 1);
+        assertEquals("Invalid action", resultsDate.getString("action"), "trackLevel");
+        assertEquals("Invalid level", resultsDate.getInt("level"), 5);
+        assertEquals("Invalid custom date", resultsDate.getLong("timestamp"), testDate2.getTime());
+
+        // test Date as wrong argument
+        Date testDate3 = new GregorianCalendar(2018, Calendar.APRIL, 10).getTime();
+        JSONObject propertiesWrong = new JSONObject().put("timestamp", new SimpleDateFormat("yyyy.MM.dd hh:mm").format(testDate3));
+        AppMetrDirtyHack.trackEvent("customTimestamp3", propertiesWrong);
+        JSONObject resultsWrong = eventList.get(eventList.size() - 1);
+        assertEquals("Invalid action", resultsWrong.getString("action"), "trackEvent");
+        assertEquals("Invalid event name", resultsWrong.getString("event"), "customTimestamp3");
+        assertTrue("Invalid custom date", System.currentTimeMillis() - resultsWrong.getLong("timestamp") < 50);
     }
 }
