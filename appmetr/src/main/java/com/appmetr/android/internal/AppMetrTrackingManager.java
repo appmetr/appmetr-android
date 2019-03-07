@@ -4,23 +4,23 @@
  */
 package com.appmetr.android.internal;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Handler;
-import android.provider.Settings;
+import android.content.Intent;
+import android.os.PersistableBundle;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.appmetr.android.AppmetrConstants;
 import com.appmetr.android.BuildConfig;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.appmetr.android.UploadJobService;
+import com.appmetr.android.UploadService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -35,13 +35,9 @@ import java.util.zip.DataFormatException;
  */
 public class AppMetrTrackingManager {
     private final static String TAG = "AppMetrTrackingManager";
+    private final static int UPLOAD_JOB_ID = 1001;
 
-    protected String mToken = null;
-    protected final RequestParameters mRequestParameters;
-    protected final String mUserID;
-    protected String mGoogleAID;
-    protected String mFireOsAID;
-    protected String mWebServiceCustomUrl;
+    protected RequestParameters mRequestParameters;
     protected WebServiceRequest mWebServiceRequest;
 
     protected int mCacheInterval = 0;
@@ -80,8 +76,6 @@ public class AppMetrTrackingManager {
      * @param context Application context
      */
     protected AppMetrTrackingManager(Context context) {
-        readManifestMeta(context);
-
         mContextProxy = new ContextProxy(context);
 
         // load preferences
@@ -93,26 +87,9 @@ public class AppMetrTrackingManager {
 
         mFileList = mPreferences.getFileList();
 
-        mRequestParameters = new RequestParameters(context);
-        mUserID = mRequestParameters.getUserID();
-
         if(!mPreferences.getIsFirstTrackSessionSent()) {
             mInstallReferrerConnectionHandler = new InstallReferrerConnectionHandler();
             mInstallReferrerConnectionHandler.connect(context, mPreferences);
-        }
-    }
-
-    private void readManifestMeta(Context context) {
-        try {
-            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-
-            if (appInfo != null && appInfo.metaData != null) {
-                if (appInfo.metaData.containsKey("appmetrUrl")) {
-                    mWebServiceCustomUrl = appInfo.metaData.getString("appmetrUrl");
-                }
-            }
-        } catch (final Throwable t) {
-            Log.e(TAG, "Failed to read meta-data from manifest", t);
         }
     }
 
@@ -157,14 +134,6 @@ public class AppMetrTrackingManager {
         mFlushAndUploadEventsOnResume = false;
     }
 
-    protected String getWebServiceUrl() {
-        if (mWebServiceCustomUrl != null && mWebServiceCustomUrl.length() > 0) {
-            return mWebServiceCustomUrl;
-        } else {
-            return LibraryPreferences.DEFAULT_SERVICE_ADDRESS;
-        }
-    }
-
     /**
      * Method for additional setup libraries data. Must be valid parameter
      * token.
@@ -173,7 +142,7 @@ public class AppMetrTrackingManager {
      * @throws DataFormatException - library throws exception if token is not valid
      */
     protected void initialize(String token) throws DataFormatException, SecurityException {
-        String wesServiceUrl = getWebServiceUrl();
+        String wesServiceUrl = mContextProxy.WebServiceUrl;
 
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "WebServiceUrl: " + wesServiceUrl);
@@ -185,7 +154,7 @@ public class AppMetrTrackingManager {
             throw new DataFormatException("Not valid token!");
         }
 
-        mToken = token;
+        mRequestParameters = new RequestParameters(mContextProxy.getContext(), token);
 
         mStartLock.lock();
         if (!mStarted) {
@@ -225,14 +194,21 @@ public class AppMetrTrackingManager {
         } catch (final Throwable t) {
             Log.e(TAG, "sleepLibrary failed", t);
         }
+        uploadCacheDeferred();
     }
 
     /**
      * Methods which must be called when applications exits background mode
      */
     protected void restoreLibrary() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            JobScheduler jobScheduler = (JobScheduler) mContextProxy.getContext().getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            if (jobScheduler != null) {
+                jobScheduler.cancel(UPLOAD_JOB_ID);
+            }
+        }
         mStartLock.lock();
-        if (mToken != null && !mStarted) {
+        if (mRequestParameters != null && !mStarted) {
             initThreadExecutor();
             createTimers();
 
@@ -529,7 +505,11 @@ public class AppMetrTrackingManager {
             copyFileList = new ArrayList<String>(mFileList);
         }
 
-        if ((res = uploadBatchesImpl(copyFileList)) > 0) {
+        UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
+        if ((res = uploadCacheTask.upload(copyFileList)) > 0) {
+            synchronized (mFileList) {
+                mFileList.removeAll(copyFileList);
+            }
             mPreferences.setFileList(mFileList);
             if (BuildConfig.DEBUG) {
                 Log.d(TAG, "[uploadBatches] " + res + " batches of " + copyFileList.size() + " uploaded successfully");
@@ -539,51 +519,27 @@ public class AppMetrTrackingManager {
         return res;
     }
 
-    protected int uploadBatchesImpl(ArrayList<String> fileList) {
-        int ret = 0;
-        int count = fileList.size();
-        for (int i = 0; i < count; i++) {
-            String fileName = fileList.get(i);
-            try {
-                if (uploadBatchFile(fileName)) {
-                    removeBatchFile(fileName);
-                    if (BuildConfig.DEBUG) {
-                        Log.d(TAG, "[uploadBatches] Server returns OK. Remove file: " + fileName);
-                    }
-                    ret++;
-                } else {
-                    if (BuildConfig.DEBUG) {
-                        Log.d(TAG, "Server error, break.");
-                    }
-                    break;
+    private void uploadCacheDeferred() {
+        if(mFileList.size() == 0)
+            return;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            PersistableBundle extras = new PersistableBundle();
+            extras.putString(UploadService.EXTRA_PARAMS_TOKEN, mRequestParameters.getToken());
+            JobInfo jobInfo = new JobInfo.Builder(UPLOAD_JOB_ID, new ComponentName(mContextProxy.getContext(), UploadJobService.class))
+                    .setExtras(extras)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    .build();
+            JobScheduler jobScheduler = (JobScheduler) mContextProxy.getContext().getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            if(jobScheduler != null && jobScheduler.schedule(jobInfo) == JobScheduler.RESULT_SUCCESS) {
+                if(BuildConfig.DEBUG) {
+                    Log.d(TAG, "Upload batch was scheduled");
                 }
-            } catch (FileNotFoundException fileError) {
-                removeBatchFile(fileName);
-                if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "[uploadBatches] File '" + fileName
-                            + "' not found. Maybe issue #37?. Skipping this file.");
-                }
-            } catch (IOException ioError) {
-                Log.e(TAG, "Failed to upload data to the server, IO error", ioError);
-                Log.e(TAG, "Internal error, break.");
-                break;
             }
-        }
-
-        return ret;
-    }
-
-    private boolean uploadBatchFile(String fileName) throws IOException {
-        byte[] batchFileContent = mContextProxy.getFileContent(fileName);
-        List<HttpNameValuePair> parameters = getRequestParameters(METHOD_TRACK);
-
-        return mWebServiceRequest.sendRequest(parameters, batchFileContent);
-    }
-
-    private void removeBatchFile(String fileName) {
-        mContextProxy.deleteFile(fileName);
-        synchronized (mFileList) {
-            mFileList.remove(fileName);
+        } else {
+            Intent intent = new Intent(mContextProxy.getContext(), UploadService.class);
+            intent.setAction(UploadService.ACTION_APPMETR_UPLOAD);
+            intent.putExtra(UploadService.EXTRA_PARAMS_TOKEN, mRequestParameters.getToken());
+            mContextProxy.getContext().startService(intent);
         }
     }
 
@@ -595,76 +551,13 @@ public class AppMetrTrackingManager {
         mPreferences.setSessionDurationCurrent(0);
     }
 
-    /**
-     * Method which generates HTTP header in a required format
-     *
-     * @return - HTTP header
-     */
-    protected List<HttpNameValuePair> getRequestParameters(String method) {
-        List<HttpNameValuePair> ret = new ArrayList<HttpNameValuePair>();
-        ret.add(new HttpNameValuePair("method", method));
-        ret.add(new HttpNameValuePair("token", mToken));
-        ret.add(new HttpNameValuePair("userId", mUserID));
-        ret.add(new HttpNameValuePair("timestamp", Long.toString(new Date().getTime())));
 
-        ret.add(new HttpNameValuePair("mobDeviceType", Build.MANUFACTURER + "," + Build.MODEL));
-        ret.add(new HttpNameValuePair("mobOSVer", Build.VERSION.RELEASE));
-        ret.add(new HttpNameValuePair("mobLibVer", LibraryPreferences.VERSION_STRING));
-        ret.add(new HttpNameValuePair("mobAndroidID", mRequestParameters.ANDROID_ID));
-
-        /* Lazy Google AID requesting */
-        if(mGoogleAID == null) {
-            try {
-                AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(mContextProxy.getContext());
-                mGoogleAID = info.getId() == null ? "" : info.getId();
-            } catch(final Throwable t) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(TAG, "Failed to retrieve GOOGLE_AID", t);
-                }
-                mGoogleAID = "";
-            }
-        }
-        if(!TextUtils.isEmpty(mGoogleAID)) {
-            ret.add(new HttpNameValuePair("mobGoogleAid", mGoogleAID));
-        } else {
-            // may be it's Amazon?
-            if(mFireOsAID == null) {
-                try {
-                    mFireOsAID = Settings.Secure.getString(mContextProxy.getContext().getContentResolver(), "advertising_id");
-                    if(mFireOsAID == null)
-                        mFireOsAID = "";
-                } catch(Throwable t) {
-                    if (BuildConfig.DEBUG) {
-                        Log.e(TAG, "Failed to retrieve FIREOS_AID", t);
-                    }
-                    mFireOsAID = "";
-                }
-            }
-            if(!TextUtils.isEmpty(mFireOsAID)) {
-                ret.add(new HttpNameValuePair("mobFireOsAid", mFireOsAID));
-            }
-        }
-
-        if (mRequestParameters.MAC_ADDRESS != null) {
-            ret.add(new HttpNameValuePair("mobMac", mRequestParameters.MAC_ADDRESS));
-        }
-
-        if (mRequestParameters.BUILD_SERIAL != null) {
-            ret.add(new HttpNameValuePair("mobBuildSerial", mRequestParameters.BUILD_SERIAL));
-        }
-
-        if (mRequestParameters.DEVICE_ID != null) {
-            ret.add(new HttpNameValuePair("mobTmDevId", mRequestParameters.DEVICE_ID));
-        }
-
-        return ret;
-    }
 
     protected boolean verifyPaymentAndCheck(String purchaseInfo, String receipt, String privateKey) {
         try {
             String salt = Utils.md5("123567890:" + System.currentTimeMillis());
 
-            List<HttpNameValuePair> parameters = getRequestParameters(METHOD_VERIFY_PAYMENT);
+            List<HttpNameValuePair> parameters = mRequestParameters.getForMethod(mContextProxy.getContext(), METHOD_VERIFY_PAYMENT);
             parameters.add((new HttpNameValuePair("purchase", purchaseInfo)));
             parameters.add((new HttpNameValuePair("receipt", receipt)));
             parameters.add((new HttpNameValuePair("salt", salt)));

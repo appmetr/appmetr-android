@@ -5,7 +5,10 @@
 package com.appmetr.android.internal;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.BuildConfig;
 
@@ -23,6 +26,13 @@ public class ContextProxy {
      */
     public static String AppVersion = "not initialized";
 
+    public String WebServiceUrl;
+
+    /**
+     * Default server address which use in production mode
+     */
+    public static final String DEFAULT_SERVICE_ADDRESS = "https://appmetr.com/api";
+
     private final Context mContext;
 
     /**
@@ -33,6 +43,7 @@ public class ContextProxy {
     public ContextProxy(Context context) {
         mContext = context;
         AppVersion = getVersion(context);
+        WebServiceUrl = getWebServiceUrl(context);
     }
 
     /**
@@ -89,5 +100,23 @@ public class ContextProxy {
         inputFile.close();
 
         return streamBuffer;
+    }
+
+    private String getWebServiceUrl(Context context) {
+        try {
+            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+
+            if (appInfo != null && appInfo.metaData != null) {
+                if (appInfo.metaData.containsKey("appmetrUrl")) {
+                    String appmetrUrl = appInfo.metaData.getString("appmetrUrl");
+                    if(!TextUtils.isEmpty(appmetrUrl)) {
+                        return appmetrUrl;
+                    }
+                }
+            }
+        } catch (final Throwable t) {
+            Log.e(TAG, "Failed to read meta-data from manifest", t);
+        }
+        return DEFAULT_SERVICE_ADDRESS;
     }
 }
