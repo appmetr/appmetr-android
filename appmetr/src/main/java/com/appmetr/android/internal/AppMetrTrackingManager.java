@@ -142,10 +142,10 @@ public class AppMetrTrackingManager {
      * @throws DataFormatException - library throws exception if token is not valid
      */
     protected void initialize(String token) throws DataFormatException, SecurityException {
-        String wesServiceUrl = mContextProxy.WebServiceUrl;
+        String wesServiceUrl = mContextProxy.webServiceUrl;
 
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "WebServiceUrl: " + wesServiceUrl);
+            Log.d(TAG, "webServiceUrl: " + wesServiceUrl);
         }
 
         mWebServiceRequest = new WebServiceRequest(wesServiceUrl);

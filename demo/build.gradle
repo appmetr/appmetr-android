@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.appmetr.android.demo"
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 11001
-        versionName "1.10.1"
+        versionCode 11100
+        versionName "1.11.0"
     }
     buildTypes {
         release {

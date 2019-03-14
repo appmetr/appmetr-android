@@ -26,7 +26,7 @@ public class ContextProxy {
      */
     public static String AppVersion = "not initialized";
 
-    public String WebServiceUrl;
+    public String webServiceUrl;
 
     /**
      * Default server address which use in production mode
@@ -43,7 +43,7 @@ public class ContextProxy {
     public ContextProxy(Context context) {
         mContext = context;
         AppVersion = getVersion(context);
-        WebServiceUrl = getWebServiceUrl(context);
+        webServiceUrl = getWebServiceUrl(context);
     }
 
     /**
