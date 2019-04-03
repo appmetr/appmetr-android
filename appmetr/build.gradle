@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 25
-        versionCode 11001
-        versionName "1.10.1"
+        minSdkVersion 14
+        targetSdkVersion 28
+        versionCode 11100
+        versionName "1.11.0"
     }
     buildTypes {
         release {
@@ -24,7 +24,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.google.android.gms:play-services-ads:9.+'
+    implementation 'com.google.android.gms:play-services-ads-identifier:16.0.0'
     implementation 'com.android.installreferrer:installreferrer:1.0'
 }
 

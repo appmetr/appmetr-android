@@ -403,14 +403,14 @@ public class AppMetr extends AppMetrTrackingManager {
      * @return The user unique identifier used by this library.
      */
     public static String getUserId() {
-        return getInstance().mUserID;
+        return getInstance().mRequestParameters.getUID();
     }
 
     /**
      * @return an unique identifier of current installation instance
      */
     public static String getInstanceIdentifier() {
-        String token = getInstance().mToken;
+        String token = getInstance().mRequestParameters.getToken();
         String result = "";
         if (token != null) {
             int len = Math.min(token.length(), 8);

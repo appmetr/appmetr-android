@@ -38,10 +38,6 @@ public class LibraryPreferences {
      * Max size of token for application.
      */
     public static final int TOKEN_MAX_SIZE = 50;
-    /**
-     * Default server address which use in production mode
-     */
-    public static final String DEFAULT_SERVICE_ADDRESS = "https://appmetr.com/api";
 
     /**
      * The salt for MD5 hashes
