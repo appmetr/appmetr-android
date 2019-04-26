@@ -4,6 +4,7 @@
  */
 package com.appmetr.android.internal;
 
+import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.BuildConfig;
 import org.json.JSONException;
@@ -101,8 +102,7 @@ public class WebServiceRequest {
 
         StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : parameters) {
-            String value = pair.getValue();
-            if (value != null) {
+            if (!TextUtils.isEmpty(pair.getValue())) {
                 res.append(res.length() > 0 ? "&" : "?");
                 res.append(pair.toString());
             }

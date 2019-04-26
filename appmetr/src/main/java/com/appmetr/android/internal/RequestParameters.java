@@ -66,7 +66,6 @@ public class RequestParameters {
     public String getDeviceKey(Context context) {
         List<HttpNameValuePair> nameValuePairs = new ArrayList<HttpNameValuePair>();
         nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
-        nameValuePairs.add(new HttpNameValuePair("platform", "Android"));
         nameValuePairs.add(new HttpNameValuePair("mobMac", getMacAddress(context)));
         nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getDeviceID(context)));
         nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getAndroidID(context)));
@@ -74,6 +73,8 @@ public class RequestParameters {
         nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getFireOsId(context)));
         StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : nameValuePairs) {
+            if(TextUtils.isEmpty(pair.getValue()))
+                continue;
             if (res.length() > 0) {
                 res.append("&");
             }

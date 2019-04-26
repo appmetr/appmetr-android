@@ -54,7 +54,6 @@ public class HttpNameValuePair {
                 res.append(URLEncoder.encode(this.value, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 Log.e(TAG, "Failed to encode http param value in " + this.getName());
-                return this.name;
             }
         }
         return res.toString();
