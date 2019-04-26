@@ -33,13 +33,13 @@ public class RequestParameters {
      * This device ID appearing in ALL Droid 2 devices, and other Froyo builds
      */
     private static final String MAGIC_ANDROID_ID = "9774d56d682e549c";
+    private static String googleAid = null;
+    private static String fireOsId = null;
 
     private final String macAddress;
     private final String deviceId;
     private final String buildSerial;
     private final String androidId;
-    private String googleAid;
-    private String fireOsId;
     private final String userId;
     private final String token;
 
@@ -53,9 +53,6 @@ public class RequestParameters {
         buildSerial = getBuildSerial();
         androidId = getAndroidID(context);
         userId = getUserID();
-        // lazy init in background
-        googleAid = null;
-        fireOsId = null;
     }
 
     public String getToken() {
@@ -64,6 +61,25 @@ public class RequestParameters {
 
     public String getUID() {
         return userId;
+    }
+
+    public String getDeviceKey(Context context) {
+        List<HttpNameValuePair> nameValuePairs = new ArrayList<HttpNameValuePair>();
+        nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
+        nameValuePairs.add(new HttpNameValuePair("platform", "Android"));
+        nameValuePairs.add(new HttpNameValuePair("mobMac", getMacAddress(context)));
+        nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getDeviceID(context)));
+        nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getAndroidID(context)));
+        nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getGoogleId(context)));
+        nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getFireOsId(context)));
+        StringBuilder res = new StringBuilder();
+        for (HttpNameValuePair pair : nameValuePairs) {
+            if (res.length() > 0) {
+                res.append("&");
+            }
+            res.append(pair.toString());
+        }
+        return res.toString();
     }
 
 
@@ -80,24 +96,19 @@ public class RequestParameters {
         ret.add(new HttpNameValuePair("userId", userId));
         ret.add(new HttpNameValuePair("timestamp", Long.toString(new Date().getTime())));
 
-        ret.add(new HttpNameValuePair("mobDeviceType", Build.MANUFACTURER + "," + Build.MODEL));
+        ret.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
         ret.add(new HttpNameValuePair("mobOSVer", Build.VERSION.RELEASE));
         ret.add(new HttpNameValuePair("mobLibVer", LibraryPreferences.VERSION_STRING));
         ret.add(new HttpNameValuePair("mobAndroidID", androidId));
 
-        /* Lazy Google AID requesting */
-        if (googleAid == null) {
-            googleAid = getGoogleId(context);
-        }
-        if (!TextUtils.isEmpty(googleAid)) {
-            ret.add(new HttpNameValuePair("mobGoogleAid", googleAid));
+        String aid = getGoogleId(context);
+        if (!TextUtils.isEmpty(aid)) {
+            ret.add(new HttpNameValuePair("mobGoogleAid", aid));
         } else {
             // may be it's Amazon?
-            if (fireOsId == null) {
-                fireOsId = getFireOsId(context);
-            }
-            if (!TextUtils.isEmpty(fireOsId)) {
-                ret.add(new HttpNameValuePair("mobFireOsAid", fireOsId));
+            aid = getFireOsId(context);
+            if (!TextUtils.isEmpty(aid)) {
+                ret.add(new HttpNameValuePair("mobFireOsAid", aid));
             }
         }
 
@@ -114,6 +125,10 @@ public class RequestParameters {
         }
 
         return ret;
+    }
+
+    private static String getDeviceType() {
+        return Build.MANUFACTURER + "," + Build.MODEL;
     }
 
     private static String getMacAddress(Context context) {
@@ -215,18 +230,20 @@ public class RequestParameters {
      * @param context Current context
      * @return Google Advertising Id
      */
-    private String getGoogleId(Context context) {
-        String advertisingId;
-        try {
-            AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(context);
-            advertisingId = info.getId() == null ? "" : info.getId();
-        } catch (final Throwable t) {
-            if (BuildConfig.DEBUG) {
-                Log.e(TAG, "Failed to retrieve googleAid", t);
+    private static String getGoogleId(Context context) {
+        /* Lazy Google AID requesting */
+        if(googleAid == null) {
+            try {
+                AdvertisingIdClient.Info info = AdvertisingIdClient.getAdvertisingIdInfo(context);
+                googleAid = info.getId() == null ? "" : info.getId();
+            } catch (final Throwable t) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Failed to retrieve googleAid", t);
+                }
+                googleAid = "";
             }
-            advertisingId = "";
         }
-        return advertisingId;
+        return googleAid;
     }
 
     /**
@@ -237,17 +254,18 @@ public class RequestParameters {
      * @param context Current context
      * @return Google Advertising Id
      */
-    private String getFireOsId(Context context) {
-        String fireOsId;
-        try {
-            fireOsId = Settings.Secure.getString(context.getContentResolver(), "advertising_id");
-            if (fireOsId == null)
+    private static String getFireOsId(Context context) {
+        if(fireOsId == null) {
+            try {
+                fireOsId = Settings.Secure.getString(context.getContentResolver(), "advertising_id");
+                if (fireOsId == null)
+                    fireOsId = "";
+            } catch (Throwable t) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Failed to retrieve FIREOS_AID", t);
+                }
                 fireOsId = "";
-        } catch (Throwable t) {
-            if (BuildConfig.DEBUG) {
-                Log.e(TAG, "Failed to retrieve FIREOS_AID", t);
             }
-            fireOsId = "";
         }
         return fireOsId;
     }

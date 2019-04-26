@@ -95,23 +95,20 @@ public class WebServiceRequest {
         return false;
     }
 
-    protected String getUrlPath(List<HttpNameValuePair> parameters) {
-        String res = "";
-        for (HttpNameValuePair pair : parameters) {
-            if (res.length() > 0) {
-                res += "&";
-            }
+    private String getUrlPath(List<HttpNameValuePair> parameters) {
+        if(parameters == null)
+            return mUrlPath;
 
+        StringBuilder res = new StringBuilder();
+        for (HttpNameValuePair pair : parameters) {
             String value = pair.getValue();
             if (value != null) {
-
-                res += pair.toString();
-            } else {
-                Log.e(TAG, "Invalid parameter " + pair.getName());
+                res.append(res.length() > 0 ? "&" : "?");
+                res.append(pair.toString());
             }
         }
 
-        return mUrlPath + "?" + res;
+        return mUrlPath + res;
     }
 
     public JSONObject sendRequest(List<HttpNameValuePair> parameters) throws IOException, JSONException, HttpException {

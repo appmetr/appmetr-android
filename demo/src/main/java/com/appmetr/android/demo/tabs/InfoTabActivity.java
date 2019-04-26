@@ -1,7 +1,10 @@
 package com.appmetr.android.demo.tabs;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -32,5 +35,22 @@ public class InfoTabActivity extends AbstractTabActivity {
         ((TextView) findViewById(R.id.userIdLabel)).setText(getString(R.string.info_tab_user_id) + separator + AppMetr.getInstanceIdentifier());
         ((TextView) findViewById(R.id.urlLabel)).setText(getString(R.string.info_tab_url) + separator + customUrl);
         ((TextView) findViewById(R.id.tokenLabel)).setText(getString(R.string.info_tab_token) + separator + getParentActivity().getToken());
+        loadDeviceKey();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void loadDeviceKey() {
+        new AsyncTask<Void, Void, String>() {
+
+            @Override
+            protected String doInBackground (Void...voids){
+                return AppMetr.getInstance().getDeviceKey();
+            }
+
+            @Override
+            protected void onPostExecute (String deviceKey){
+                ((TextView) findViewById(R.id.deviceKeyLabel)).setText(deviceKey == null ? "" : deviceKey);
+            }
+        }.execute();
     }
 }

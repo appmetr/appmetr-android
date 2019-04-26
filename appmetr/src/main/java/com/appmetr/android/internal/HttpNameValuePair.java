@@ -41,15 +41,23 @@ public class HttpNameValuePair {
 
     @Override
     public String toString() {
-        if (this.value == null) {
-            return this.name;
-        }
+        StringBuilder res = new StringBuilder();
         try {
-            return URLEncoder.encode(this.name, "UTF-8") + "=" + URLEncoder.encode(this.value, "UTF-8");
+            res.append(URLEncoder.encode(this.name, "UTF-8"));
+            res.append("=");
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, "Failed to encode http param in " + this.getName());
-            return this.name;
+            Log.e(TAG, "Failed to encode http param name in " + this.getName());
         }
+
+        if (this.value != null) {
+            try {
+                res.append(URLEncoder.encode(this.value, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                Log.e(TAG, "Failed to encode http param value in " + this.getName());
+                return this.name;
+            }
+        }
+        return res.toString();
     }
 
     @Override

@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PersistableBundle;
+import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -267,6 +268,18 @@ public class AppMetrTrackingManager {
         } catch (JSONException error) {
             Log.e(TAG, "track failed", error);
         }
+    }
+
+    /**
+     * Public method for requesting device identity
+     * It may executed long time, call it only from background thread!
+     * @return a set of device ids, encoded in a query string
+     */
+    @WorkerThread
+    public String getDeviceKey() {
+        if(mRequestParameters == null)
+            throw new IllegalStateException("Call initialize() first");
+        return mRequestParameters.getDeviceKey(mContextProxy.getContext());
     }
 
     /**
