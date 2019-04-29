@@ -6,6 +6,7 @@ package com.appmetr.android.dummy;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Base64;
 import com.appmetr.android.dummy.utils.AppMetrDirtyHack;
 import com.appmetr.android.dummy.utils.BaseAppMetrDummyActivityTest;
@@ -191,5 +192,12 @@ public class AppMetrTest extends BaseAppMetrDummyActivityTest {
         AppMetrDirtyHack.onPause();
 
         assertEquals("Failed to track installation URL", 0, testLibrary.getDirtyFileList().size());
+    }
+
+    public void testDeviceKey() throws Exception {
+        AppMetrDirtyHack testLibrary = createTestApi();
+        String deviceKey = testLibrary.getDeviceKey();
+        assetFalse(TextUtils.isEmpty(deviceKey));
+        assertTrue(deviceKey.contains("&"));
     }
 }

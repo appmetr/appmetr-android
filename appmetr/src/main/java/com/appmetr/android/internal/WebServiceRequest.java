@@ -4,6 +4,7 @@
  */
 package com.appmetr.android.internal;
 
+import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.BuildConfig;
 import org.json.JSONException;
@@ -95,23 +96,19 @@ public class WebServiceRequest {
         return false;
     }
 
-    protected String getUrlPath(List<HttpNameValuePair> parameters) {
-        String res = "";
+    private String getUrlPath(List<HttpNameValuePair> parameters) {
+        if(parameters == null)
+            return mUrlPath;
+
+        StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : parameters) {
-            if (res.length() > 0) {
-                res += "&";
-            }
-
-            String value = pair.getValue();
-            if (value != null) {
-
-                res += pair.toString();
-            } else {
-                Log.e(TAG, "Invalid parameter " + pair.getName());
+            if (!TextUtils.isEmpty(pair.getValue())) {
+                res.append(res.length() > 0 ? "&" : "?");
+                res.append(pair.toString());
             }
         }
 
-        return mUrlPath + "?" + res;
+        return mUrlPath + res;
     }
 
     public JSONObject sendRequest(List<HttpNameValuePair> parameters) throws IOException, JSONException, HttpException {

@@ -195,4 +195,17 @@ public class AppMetrHelper {
             Log.e(TAG, "identify failed", error);
         }
     }
+
+    /**
+     * Method for getting device key
+     * @return device key
+     */
+    public static String getDeviceKey() {
+        try {
+            return AppMetr.getInstance().getDeviceKey();
+        } catch(final Throwable error) {
+            Log.e(TAG, "getDeviceKey failed", error);
+        }
+        return null;
+    }
 }
