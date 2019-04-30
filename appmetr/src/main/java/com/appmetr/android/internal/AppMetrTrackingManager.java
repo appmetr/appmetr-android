@@ -248,20 +248,19 @@ public class AppMetrTrackingManager {
      */
     public void track(JSONObject event) {
         try {
+            //if user sets "timestamp" property we set "userTime" property of the event object
             if (event.has("properties")) {
                 JSONObject properties = event.optJSONObject("properties");
                 if (properties != null && properties.has(AppmetrConstants.PROPERTY_TIMESTAMP)) {
-                    Object timestamp = properties.get(AppmetrConstants.PROPERTY_TIMESTAMP);
+                    Object timestamp = properties.remove(AppmetrConstants.PROPERTY_TIMESTAMP);
                     if (timestamp instanceof Date || timestamp instanceof Long) {
-                        event.put(AppmetrConstants.PROPERTY_TIMESTAMP, timestamp);
-                        properties.remove(AppmetrConstants.PROPERTY_TIMESTAMP);
+                        event.put(AppmetrConstants.PROPERTY_USER_TIME, timestamp);
                     }
                 }
-
             }
-            if (!event.has(AppmetrConstants.PROPERTY_TIMESTAMP) || (!(event.get(AppmetrConstants.PROPERTY_TIMESTAMP) instanceof Long) && !(event.get(AppmetrConstants.PROPERTY_TIMESTAMP) instanceof Date)))
-                event.put(AppmetrConstants.PROPERTY_TIMESTAMP, new Date());
-            JSONObject convertedEvent = Utils.convertDate(event);
+
+            event.put(AppmetrConstants.PROPERTY_TIMESTAMP, System.currentTimeMillis());
+            JSONObject convertedEvent = Utils.convertDateToLong(event);
             synchronized (mEventList) {
                 mEventList.add(convertedEvent);
             }

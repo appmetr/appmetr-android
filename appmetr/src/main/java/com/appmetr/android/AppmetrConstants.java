@@ -5,7 +5,8 @@
 package com.appmetr.android;
 
 public final class AppmetrConstants {
-    public final static String PROPERTY_TIMESTAMP = "timestamp";
+    public static final String PROPERTY_TIMESTAMP = "timestamp";
+    public static final String PROPERTY_USER_TIME = "userTime";
 
     private AppmetrConstants() {
         throw new UnsupportedOperationException("Only static instance");
