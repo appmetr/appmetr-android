@@ -57,7 +57,7 @@ public class Utils {
      * @return - event with converted dates
      * @throws JSONException
      */
-    public static JSONObject convertDate(JSONObject event) throws JSONException {
+    public static JSONObject convertDateToLong(JSONObject event) throws JSONException {
         Iterator<?> keysIterator = event.keys();
         while (keysIterator.hasNext()) {
             String key = (String) keysIterator.next();
@@ -67,7 +67,7 @@ public class Utils {
             if (valueClass.equals(Date.class)) {
                 event.put(key, Long.valueOf(((Date) value).getTime()));
             } else if (valueClass.equals(JSONObject.class)) {
-                convertDate((JSONObject) value);
+                convertDateToLong((JSONObject) value);
             }
         }
 
