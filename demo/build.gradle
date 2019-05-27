@@ -7,8 +7,8 @@ android {
         applicationId "com.appmetr.android.demo"
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 11200
-        versionName "1.12.0"
+        versionCode 11201
+        versionName "1.12.1"
     }
     buildTypes {
         release {
