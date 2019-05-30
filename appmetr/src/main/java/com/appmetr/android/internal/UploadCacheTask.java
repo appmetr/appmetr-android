@@ -77,6 +77,31 @@ public class UploadCacheTask  {
         return res;
     }
 
+    public boolean uploadData(byte[] data) {
+        if(data == null || data.length == 0) {
+            mStatus = UploadStatus.Success;
+            return true;
+        }
+        mStatus = UploadStatus.Pending;
+        mUploadCacheLock.lock();
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "[uploadCache] Thread started.");
+        }
+
+        try {
+            List<HttpNameValuePair> parameters = mRequestParameters.getForMethod(mContextProxy.getContext(), METHOD_TRACK);
+            return mWebServiceRequest.sendRequest(parameters, data);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to upload data to the server, IO error", e);
+            return false;
+        } finally {
+            mUploadCacheLock.unlock();
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "[uploadCache] Thread finished.");
+            }
+        }
+    }
+
     /**
      * Private method that uploads list of files to server.
      *

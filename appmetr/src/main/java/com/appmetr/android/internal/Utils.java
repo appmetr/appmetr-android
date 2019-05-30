@@ -8,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ import java.util.Date;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * Utility class for AppMetr
@@ -96,5 +100,17 @@ public class Utils {
 
         fmt.close();
         return builder.toString();
+    }
+
+    public static byte[] compressData(byte[] data) {
+        Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION, true);
+        deflater.setInput(data);
+        deflater.finish();
+        byte[] buffer = new byte[data.length];
+        int length = deflater.deflate(buffer);
+        deflater.end();
+        byte[] result = new byte[length];
+        System.arraycopy(buffer, 0, result, 0, length);
+        return result;
     }
 }

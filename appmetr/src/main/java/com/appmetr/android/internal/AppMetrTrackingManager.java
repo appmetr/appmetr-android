@@ -14,6 +14,7 @@ import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.appmetr.android.AppMetr;
 import com.appmetr.android.AppmetrConstants;
 import com.appmetr.android.BuildConfig;
 import com.appmetr.android.UploadJobService;
@@ -22,6 +23,7 @@ import com.appmetr.android.UploadService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -57,6 +59,7 @@ public class AppMetrTrackingManager {
 
     protected final ArrayList<JSONObject> mEventList = new ArrayList<JSONObject>();
     protected final ArrayList<String> mFileList;
+    protected final ArrayList<String> mUploadList = new ArrayList<String>();
 
     protected Lock mFileWritterLock = new ReentrantLock();
     protected StringFileWriter mCurrentFileWriter;
@@ -83,7 +86,7 @@ public class AppMetrTrackingManager {
         mPreferences = createLibraryPreferences(context);
 
         mCacheInterval = LibraryPreferences.DEFAULT_CACHE_TIME;
-        mUploadInterval = LibraryPreferences.DEFAULT_UPLOAD_TIME;
+        mUploadInterval = Math.max(mCacheInterval, LibraryPreferences.DEFAULT_UPLOAD_TIME);
         mMaxFileSize = LibraryPreferences.DEFAULT_BATCH_SIZE;
 
         mFileList = mPreferences.getFileList();
@@ -101,14 +104,6 @@ public class AppMetrTrackingManager {
             }
             mTimer = new Timer();
 
-            // starting timer for upload methods
-            mTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    uploadCache();
-                }
-            }, mUploadInterval, mUploadInterval);
-
             // starting timer for flush methods
             mTimer.schedule(new TimerTask() {
                 @Override
@@ -116,6 +111,14 @@ public class AppMetrTrackingManager {
                     flushData();
                 }
             }, mCacheInterval, mCacheInterval);
+
+            // starting timer for upload methods
+            mTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    uploadCache();
+                }
+            }, mUploadInterval, mUploadInterval);
         }
     }
 
@@ -418,9 +421,10 @@ public class AppMetrTrackingManager {
 
         if (copyEvent.size() > 0) {
             mFileWritterLock.lock();
+            String encodedString = null;
             try {
                 int batchId = mPreferences.getNextBatchID();
-                String encodedString = Utils.getEncodedString(copyEvent, batchId);
+                encodedString = Utils.getEncodedString(copyEvent, batchId);
 
                 if (mCurrentFileWriter != null
                         && encodedString.length() + mCurrentFileWriter.getCurrentFileSize() > mMaxFileSize) {
@@ -439,9 +443,19 @@ public class AppMetrTrackingManager {
                 mCurrentFileWriter.addChunk(encodedString);
             } catch (Exception error) {
                 Log.e(TAG, "Failed to save the data to disc.", error);
+                if(!TextUtils.isEmpty(encodedString)) {
+                    synchronized (mUploadList) {
+                        mUploadList.add(encodedString);
+                    }
+                }
+                try {
+                    trackErrorEvent(error);
+                } catch (JSONException e) {
+                    Log.e(TAG, "Json parsing error", e);
+                }
+            } finally {
+                mFileWritterLock.unlock();
             }
-
-            mFileWritterLock.unlock();
         }
     }
 
@@ -449,7 +463,7 @@ public class AppMetrTrackingManager {
      * Private method which closes current pointer to file and saves file in
      * file list for upload.
      */
-    protected void closeCurrentFileWritter() {
+    protected void closeCurrentFileWritter() throws IOException {
         mFileWritterLock.lock();
 
         try {
@@ -467,12 +481,12 @@ public class AppMetrTrackingManager {
             if (BuildConfig.DEBUG) {
                 Log.e(TAG, "Failed to close stream.", e);
             }
+            throw e;
+        } finally {
+            mCurrentFileWriter = null;
+            mFileWritterLock.unlock();
+            mPreferences.setFileList(mFileList);
         }
-
-        mCurrentFileWriter = null;
-        mFileWritterLock.unlock();
-
-        mPreferences.setFileList(mFileList);
     }
 
     /**
@@ -488,7 +502,10 @@ public class AppMetrTrackingManager {
         }
 
         try {
+            // upload files with flushed data
             uploadBatches();
+            // upload in-memory data
+            uploadData();
 
             if (BuildConfig.DEBUG) {
                 Log.d(TAG, "[uploadCache] Thread finished.");
@@ -509,7 +526,11 @@ public class AppMetrTrackingManager {
      */
     protected int uploadBatches() {
         // close current batch file
-        closeCurrentFileWritter();
+        try {
+            closeCurrentFileWritter();
+        } catch (IOException e) {
+            Log.e(TAG, "[uploadBatches] failed to close current batch file");
+        }
 
         int res = 0;
         ArrayList<String> copyFileList;
@@ -529,6 +550,57 @@ public class AppMetrTrackingManager {
         }
 
         return res;
+    }
+
+
+    protected void uploadData() {
+        ArrayList<String> uploadList;
+        synchronized (mUploadList) {
+            if(mUploadList.size() == 0)
+                return;
+            uploadList = new ArrayList<String>(mUploadList);
+            mUploadList.clear();
+        }
+
+        try {
+            ByteArrayOutputStream uploadDataStream = null;
+            int startIndex = 0;
+            for(int i = 0; i < uploadList.size(); i++) {
+                if(uploadDataStream == null) {
+                    uploadDataStream = new ByteArrayOutputStream();
+                    uploadDataStream.write("[".getBytes());
+                }
+                String uploadElem = uploadList.get(i);
+                if(TextUtils.isEmpty(uploadElem))
+                    continue;
+                if(uploadDataStream.size() > 1)
+                    uploadDataStream.write(",".getBytes());
+                uploadDataStream.write(uploadElem.getBytes());
+                if(i == uploadList.size() - 1 || uploadDataStream.size() > mMaxFileSize) {
+                    uploadDataStream.write("]".getBytes());
+                    uploadDataStream.close();
+                    UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
+                    if(uploadCacheTask.uploadData(Utils.compressData(uploadDataStream.toByteArray()))) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "[uploadData] Direct events uploaded successfully");
+                        }
+                    } else {
+                        Log.e(TAG, "Failed to upload events directly. Will be retry later");
+                        synchronized (mUploadList) {
+                            for(int j = startIndex; j <= i; j++) {
+                                mUploadList.add(j, uploadList.get(j));
+                            }
+                        }
+                    }
+                    if(i < uploadList.size() - 1) {
+                        uploadDataStream = null;
+                        startIndex = i + 1;
+                    }
+                }
+            }
+        } catch(IOException e) {
+            Log.e(TAG, "[uploadData] error writing to memory stream", e);
+        }
     }
 
     private void uploadCacheDeferred() {
@@ -586,6 +658,22 @@ public class AppMetrTrackingManager {
         } catch (final Throwable t) {
             Log.e(TAG, "Failed to validate payment", t);
             return false;
+        }
+    }
+
+    private void trackErrorEvent(Exception error) throws JSONException {
+        String message = error.getClass().getName() + ": " + error.getMessage();
+        AppMetr.trackEvent("appmetr_error", new JSONObject().put("message", message));
+        int nextId = mPreferences.getNextBatchID();
+        String encodedString;
+        synchronized (mEventList) {
+            encodedString = Utils.getEncodedString(mEventList, nextId);
+            mEventList.clear();
+        }
+        if(!TextUtils.isEmpty(encodedString)) {
+            synchronized (mUploadList) {
+                mUploadList.add(encodedString);
+            }
         }
     }
 }
