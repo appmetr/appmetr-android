@@ -39,6 +39,7 @@ import java.util.zip.DataFormatException;
 public class AppMetrTrackingManager {
     private final static String TAG = "AppMetrTrackingManager";
     private final static int UPLOAD_JOB_ID = 1001;
+    private final static int UPLOAD_IN_MEMORY_COUNT = 10;
 
     protected RequestParameters mRequestParameters;
     protected WebServiceRequest mWebServiceRequest;
@@ -422,8 +423,9 @@ public class AppMetrTrackingManager {
         if (copyEvent.size() > 0) {
             mFileWritterLock.lock();
             String encodedString = null;
+            int batchId = 0;
             try {
-                int batchId = mPreferences.getNextBatchID();
+                batchId = mPreferences.getNextBatchID();
                 encodedString = Utils.getEncodedString(copyEvent, batchId);
 
                 if (mCurrentFileWriter != null
@@ -445,7 +447,10 @@ public class AppMetrTrackingManager {
                 Log.e(TAG, "Failed to save the data to disc.", error);
                 if(!TextUtils.isEmpty(encodedString)) {
                     synchronized (mUploadList) {
-                        mUploadList.add(encodedString);
+                        if(mUploadList.size() < UPLOAD_IN_MEMORY_COUNT)
+                            mUploadList.add(encodedString);
+                        else
+                            Log.e(TAG, "Skip uploading batch " + batchId + " due to in-memory size limit");
                     }
                 }
                 try {
@@ -588,7 +593,9 @@ public class AppMetrTrackingManager {
                         Log.e(TAG, "Failed to upload events directly. Will be retry later");
                         synchronized (mUploadList) {
                             for(int j = startIndex; j <= i; j++) {
-                                mUploadList.add(j, uploadList.get(j));
+                                if(mUploadList.size() >= UPLOAD_IN_MEMORY_COUNT)
+                                    break;
+                                mUploadList.add(uploadList.get(j));
                             }
                         }
                     }
@@ -672,7 +679,11 @@ public class AppMetrTrackingManager {
         }
         if(!TextUtils.isEmpty(encodedString)) {
             synchronized (mUploadList) {
-                mUploadList.add(encodedString);
+                if(mUploadList.size() < UPLOAD_IN_MEMORY_COUNT)
+                   mUploadList.add(encodedString);
+                else
+                    Log.e(TAG, "Skip uploading batch " + nextId + " due to in-memory size limit");
+
             }
         }
     }
