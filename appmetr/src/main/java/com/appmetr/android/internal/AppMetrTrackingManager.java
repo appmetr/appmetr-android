@@ -443,6 +443,8 @@ public class AppMetrTrackingManager {
                 }
 
                 mCurrentFileWriter.addChunk(encodedString);
+                // without closing file writer we have no guarantee that we save this data in future
+                closeCurrentFileWritter();
             } catch (Exception error) {
                 Log.e(TAG, "Failed to save the data to disc.", error);
                 if(!TextUtils.isEmpty(encodedString)) {
@@ -599,10 +601,8 @@ public class AppMetrTrackingManager {
                             }
                         }
                     }
-                    if(i < uploadList.size() - 1) {
-                        uploadDataStream = null;
-                        startIndex = i + 1;
-                    }
+                    uploadDataStream = null;
+                    startIndex = i + 1;
                 }
             }
         } catch(IOException e) {
