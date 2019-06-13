@@ -39,7 +39,7 @@ import java.util.zip.DataFormatException;
 public class AppMetrTrackingManager {
     private final static String TAG = "AppMetrTrackingManager";
     private final static int UPLOAD_JOB_ID = 1001;
-    private final static int UPLOAD_IN_MEMORY_COUNT = 10;
+    private final static int UPLOAD_IN_MEMORY_COUNT = 30;
 
     protected RequestParameters mRequestParameters;
     protected WebServiceRequest mWebServiceRequest;
@@ -192,7 +192,7 @@ public class AppMetrTrackingManager {
 
             unloadLibrary();
             flushDataImpl();
-            closeCurrentFileWritter();
+            closeCurrentFileWriter();
 
             mStarted = false;
             mStartLock.unlock();
@@ -430,7 +430,7 @@ public class AppMetrTrackingManager {
 
                 if (mCurrentFileWriter != null
                         && encodedString.length() + mCurrentFileWriter.getCurrentFileSize() > mMaxFileSize) {
-                    closeCurrentFileWritter();
+                    closeCurrentFileWriter();
                 }
 
                 if (mCurrentFileWriter == null) {
@@ -444,7 +444,7 @@ public class AppMetrTrackingManager {
 
                 mCurrentFileWriter.addChunk(encodedString);
                 // without closing file writer we have no guarantee that we save this data in future
-                closeCurrentFileWritter();
+                closeCurrentFileWriter();
             } catch (Exception error) {
                 Log.e(TAG, "Failed to save the data to disc.", error);
                 if(!TextUtils.isEmpty(encodedString)) {
@@ -470,7 +470,7 @@ public class AppMetrTrackingManager {
      * Private method which closes current pointer to file and saves file in
      * file list for upload.
      */
-    protected void closeCurrentFileWritter() throws IOException {
+    protected void closeCurrentFileWriter() throws IOException {
         mFileWritterLock.lock();
 
         try {
@@ -481,7 +481,7 @@ public class AppMetrTrackingManager {
                 }
 
                 if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "[closeCurrentFileWritter] Close batch file " + mCurrentFileWriter.getFileName());
+                    Log.d(TAG, "[closeCurrentFileWriter] Close batch file " + mCurrentFileWriter.getFileName());
                 }
             }
         } catch (final IOException e) {
@@ -534,7 +534,7 @@ public class AppMetrTrackingManager {
     protected int uploadBatches() {
         // close current batch file
         try {
-            closeCurrentFileWritter();
+            closeCurrentFileWriter();
         } catch (IOException e) {
             Log.e(TAG, "[uploadBatches] failed to close current batch file");
         }
@@ -566,24 +566,23 @@ public class AppMetrTrackingManager {
             if(mUploadList.size() == 0)
                 return;
             uploadList = new ArrayList<String>(mUploadList);
-            mUploadList.clear();
         }
 
         try {
             ByteArrayOutputStream uploadDataStream = null;
-            int startIndex = 0;
-            for(int i = 0; i < uploadList.size(); i++) {
+            int index = 0;
+            while(index < uploadList.size()) {
                 if(uploadDataStream == null) {
                     uploadDataStream = new ByteArrayOutputStream();
                     uploadDataStream.write("[".getBytes());
                 }
-                String uploadElem = uploadList.get(i);
+                String uploadElem = uploadList.get(index++);
                 if(TextUtils.isEmpty(uploadElem))
                     continue;
                 if(uploadDataStream.size() > 1)
                     uploadDataStream.write(",".getBytes());
                 uploadDataStream.write(uploadElem.getBytes());
-                if(i == uploadList.size() - 1 || uploadDataStream.size() > mMaxFileSize) {
+                if(index == uploadList.size() || uploadDataStream.size() > mMaxFileSize) {
                     uploadDataStream.write("]".getBytes());
                     uploadDataStream.close();
                     UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
@@ -591,18 +590,17 @@ public class AppMetrTrackingManager {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "[uploadData] Direct events uploaded successfully");
                         }
+                        List<String> successfullyUploaded = uploadList.subList(0, index);
+                        synchronized (mUploadList) {
+                            mUploadList.removeAll(successfullyUploaded);
+                        }
+                        successfullyUploaded.clear();
+                        index = 0;
                     } else {
                         Log.e(TAG, "Failed to upload events directly. Will be retry later");
-                        synchronized (mUploadList) {
-                            for(int j = startIndex; j <= i; j++) {
-                                if(mUploadList.size() >= UPLOAD_IN_MEMORY_COUNT)
-                                    break;
-                                mUploadList.add(uploadList.get(j));
-                            }
-                        }
+                        return;
                     }
                     uploadDataStream = null;
-                    startIndex = i + 1;
                 }
             }
         } catch(IOException e) {
