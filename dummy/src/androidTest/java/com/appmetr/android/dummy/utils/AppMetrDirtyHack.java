@@ -219,7 +219,7 @@ public class AppMetrDirtyHack extends AppMetr {
     }
 
     public void dirtyCloseCurrentFileWritter() throws Exception {
-        closeCurrentFileWritter();
+        closeCurrentFileWriter();
     }
 
     public String getDirtyBatchData() throws Exception {
