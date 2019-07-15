@@ -10,9 +10,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PersistableBundle;
-import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.WorkerThread;
 
 import com.appmetr.android.AppMetr;
 import com.appmetr.android.AppmetrConstants;
@@ -25,7 +26,11 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;

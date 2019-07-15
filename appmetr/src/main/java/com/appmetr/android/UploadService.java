@@ -4,8 +4,9 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import com.appmetr.android.internal.ContextProxy;
 import com.appmetr.android.internal.LibraryPreferences;
