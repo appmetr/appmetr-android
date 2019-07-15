@@ -14,10 +14,15 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.appmetr.android.BuildConfig;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,7 +51,7 @@ public class RequestParameters {
     /**
      * Retrieve request parameters from context
      */
-    public RequestParameters(Context context, String token) {
+    public RequestParameters(@NonNull Context context, @NonNull String token) {
         this.token = token;
         macAddress = getMacAddress(context);
         deviceId = getDeviceID(context);
@@ -65,12 +70,13 @@ public class RequestParameters {
 
     public String getDeviceKey(Context context) {
         List<HttpNameValuePair> nameValuePairs = new ArrayList<HttpNameValuePair>();
-        nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
-        nameValuePairs.add(new HttpNameValuePair("mobMac", getMacAddress(context)));
-        nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getDeviceID(context)));
-        nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getAndroidID(context)));
-        nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getGoogleId(context)));
-        nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getFireOsId(context)));
+        nameValuePairs.add(new HttpNameValuePair("token", getToken().toLowerCase(Locale.US)));
+        nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getHash(getDeviceType())));
+        nameValuePairs.add(new HttpNameValuePair("mobMac", getHash(getMacAddress(context))));
+        nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getHash(getDeviceID(context))));
+        nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getHash(getAndroidID(context))));
+        nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getHash(getGoogleId(context))));
+        nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getHash(getFireOsId(context))));
         StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : nameValuePairs) {
             if(TextUtils.isEmpty(pair.getValue()))
@@ -141,7 +147,7 @@ public class RequestParameters {
                 if (wifiInfo != null) {
                     ret = wifiInfo.getMacAddress();
                     if (ret != null) {
-                        ret = ret.replace(":", "").toLowerCase(Locale.getDefault());
+                        ret = ret.replaceAll("\\W", "").toUpperCase(Locale.US);
                     }
                 }
             }
@@ -269,5 +275,11 @@ public class RequestParameters {
             }
         }
         return fireOsId;
+    }
+
+    private static String getHash(String data) {
+        if(TextUtils.isEmpty(data))
+            return data;
+        return Hashing.murmur3_128().hashString(data.toLowerCase(Locale.US), Charsets.UTF_8).toString();
     }
 }
