@@ -78,7 +78,7 @@ public class RequestParameters {
     public String getDeviceKey(Context context) {
         List<HttpNameValuePair> nameValuePairs = new ArrayList<HttpNameValuePair>();
         nameValuePairs.add(new HttpNameValuePair("token", getToken().toLowerCase(Locale.US)));
-        nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getHash(getDeviceType())));
+        nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
         nameValuePairs.add(new HttpNameValuePair("mobMac", getHash(getMacAddress(context))));
         nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getHash(getDeviceID(context))));
         nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getHash(getAndroidID(context))));
