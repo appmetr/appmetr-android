@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -51,13 +52,19 @@ public class RequestParameters {
     /**
      * Retrieve request parameters from context
      */
-    public RequestParameters(@NonNull Context context, @NonNull String token) {
+    public RequestParameters(@NonNull final Context context, @NonNull String token) {
         this.token = token;
         macAddress = getMacAddress(context);
         deviceId = getDeviceID(context);
         buildSerial = getBuildSerial();
         androidId = getAndroidID(context);
         userId = getUserID();
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                googleAid = getGoogleId(context);
+            }
+        });
     }
 
     public String getToken() {
@@ -75,7 +82,8 @@ public class RequestParameters {
         nameValuePairs.add(new HttpNameValuePair("mobMac", getHash(getMacAddress(context))));
         nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getHash(getDeviceID(context))));
         nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getHash(getAndroidID(context))));
-        nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getHash(getGoogleId(context))));
+        nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getHash(googleAid)));
+                                                // use googleAid only if we already have it
         nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getHash(getFireOsId(context))));
         StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : nameValuePairs) {
@@ -259,7 +267,7 @@ public class RequestParameters {
      * doesn't return null in any situation.
      *
      * @param context Current context
-     * @return Google Advertising Id
+     * @return FireOS Advertising Id
      */
     private static String getFireOsId(Context context) {
         if(fireOsId == null) {
