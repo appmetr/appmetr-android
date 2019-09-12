@@ -208,4 +208,16 @@ public class AppMetrHelper {
         }
         return null;
     }
+
+    /**
+     * Attach properties to separate entity instead of user
+     */
+    public static void attachEntityAttributes(String entityName, String entityValue, String serializedProperties) {
+        try {
+            JSONObject properties = new JSONObject(serializedProperties);
+            AppMetr.attachEntityAttributes(entityName, entityValue, properties);
+        } catch (final Throwable error) {
+            Log.e(TAG, "attachEntityAttributes failed", error);
+        }
+    }
 }

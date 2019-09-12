@@ -6,6 +6,7 @@ package com.appmetr.android;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.internal.AppMetrTrackingManager;
 import com.appmetr.android.internal.ContextProxy;
@@ -383,6 +384,33 @@ public class AppMetr extends AppMetrTrackingManager {
      */
     public static boolean verifyPayment(String purchaseInfo, String signature, String privateKey) {
         return getInstance().verifyPaymentAndCheck(purchaseInfo, signature, privateKey);
+    }
+
+    /**
+     * Attach attributes to separate entity instead of user
+     *
+     * @param entityName - name of entity to attach
+     * @param entityValue - identity value of entity
+     * @param properties - attributes to attach
+     */
+    public static void attachEntityAttributes(String entityName, String entityValue, JSONObject properties) {
+        try {
+            if(TextUtils.isEmpty(entityName) || TextUtils.isEmpty(entityValue)) {
+                Log.e(TAG, "AttachEntityAttributes failed: entity name and value can't be empty");
+                return;
+            }
+            
+            if (properties == null) {
+                properties = new JSONObject();
+            }
+            JSONObject action = new JSONObject().put("action", "attachEntityAttributes");
+            action.put("entityName", entityName);
+            action.put("entityValue", entityValue);
+            action.put("properties", properties);
+            getInstance().track(action);
+        } catch (JSONException error) {
+            Log.e(TAG, "AttachEntityAttributes failed", error);
+        }
     }
 
     /**
