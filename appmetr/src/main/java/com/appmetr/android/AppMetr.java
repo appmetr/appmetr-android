@@ -395,14 +395,13 @@ public class AppMetr extends AppMetrTrackingManager {
      */
     public static void attachEntityAttributes(String entityName, String entityValue, JSONObject properties) {
         try {
-            if(TextUtils.isEmpty(entityName) || TextUtils.isEmpty(entityValue)) {
-                Log.e(TAG, "AttachEntityAttributes failed: entity name and value can't be empty");
-                return;
-            }
-            
-            if (properties == null) {
-                properties = new JSONObject();
-            }
+            if(TextUtils.isEmpty(entityName))
+                throw new IllegalArgumentException("entityName is null or empty");
+            if(TextUtils.isEmpty(entityValue))
+                throw new IllegalArgumentException("entityValue is null or empty");
+            if (properties == null || properties.length() == 0)
+                throw new IllegalArgumentException("properties is null or empty");
+
             JSONObject action = new JSONObject().put("action", "attachEntityAttributes");
             action.put("entityName", entityName);
             action.put("entityValue", entityValue);
