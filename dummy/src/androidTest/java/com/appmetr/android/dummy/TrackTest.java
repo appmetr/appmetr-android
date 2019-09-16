@@ -209,4 +209,23 @@ public class TrackTest extends BaseAppMetrDummyActivityTest {
         assertEquals("Invalid event name", resultsWrong.getString("event"), "customTimestamp3");
         assertTrue("Invalid custom date", System.currentTimeMillis() - resultsWrong.getLong("timestamp") < 50);
     }
+
+    public void testAttachEntityAttributes() throws Exception {
+        AppMetrDirtyHack testLibrary;
+        testLibrary = new AppMetrDirtyHack(getActivity());
+        testLibrary.initialize("TestThisLibrary");
+        ArrayList<JSONObject> eventList = testLibrary.getDirtyEventList();
+
+        String anyName = "testEntity";
+        String anyValue = "testEntityValue";
+        JSONObject anyAttributes = new JSONObject().put("testAttrib", "testVal");
+        AppMetrDirtyHack.attachEntityAttributes(anyName, anyValue, anyAttributes);
+        JSONObject event = eventList.get(eventList.size() - 1);
+
+        assertEquals(event.getString("action"), "attachEntityAttributes");
+        assertEquals(event.getString("entityName"), anyName);
+        assertEquals(event.getString("entityValue"), anyValue);
+        assertEquals(event.getJSONObject("properties"), anyAttributes);
+    }
+
 }
