@@ -48,7 +48,6 @@ public class InstallReferrerConnectionHandler implements InstallReferrerStateLis
                         mPreferences.setInstallReferrer(response.getInstallReferrer());
                         mPreferences.setInstallReferrerClickTimestampSeconds(response.getReferrerClickTimestampSeconds());
                         mPreferences.setInstallBeginTimestampSeconds(response.getInstallBeginTimestampSeconds());
-                        mPreferences.setIsInstallReferrerTrackSent(true);
                         mReferrerClient.endConnection();
                     } catch (RemoteException e) {
                         Log.e(TAG, "Failed to get install referrer data", e);
@@ -63,6 +62,8 @@ public class InstallReferrerConnectionHandler implements InstallReferrerStateLis
                 default:
                     Log.w(TAG, "Response code not recognized");
             }
+            mPreferences.setIsInstallReferrerTrackSent(mPreferences.getIsInstallReferrerTrackSent()
+                    || responseCode != InstallReferrerResponse.SERVICE_DISCONNECTED);
         }
 
         mReferrerClient = null;
