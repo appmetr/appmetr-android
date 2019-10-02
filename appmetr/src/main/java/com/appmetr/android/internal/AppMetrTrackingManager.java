@@ -642,8 +642,6 @@ public class AppMetrTrackingManager {
                             .put("action", "trackEvent")
                             .put("event", "install_referrer")
                             .put("properties", referrerProperties));
-
-                    mPreferences.setIsInstallReferrerTrackSent(true);
                 } catch (JSONException error) {
                     Log.e(TAG, "track referrer event failed", error);
                 }

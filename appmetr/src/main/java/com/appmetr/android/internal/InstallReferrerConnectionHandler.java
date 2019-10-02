@@ -48,6 +48,7 @@ public class InstallReferrerConnectionHandler implements InstallReferrerStateLis
                         mPreferences.setInstallReferrer(response.getInstallReferrer());
                         mPreferences.setInstallReferrerClickTimestampSeconds(response.getReferrerClickTimestampSeconds());
                         mPreferences.setInstallBeginTimestampSeconds(response.getInstallBeginTimestampSeconds());
+                        mPreferences.setIsInstallReferrerTrackSent(true);
                         mReferrerClient.endConnection();
                     } catch (RemoteException e) {
                         Log.e(TAG, "Failed to get install referrer data", e);
