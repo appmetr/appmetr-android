@@ -76,7 +76,6 @@ public class AppMetrTrackingManager {
     protected final static String METHOD_TRACK = "server.track";
     protected final static String METHOD_VERIFY_PAYMENT = "server.verifyPayment";
 
-    private InstallReferrerConnectionHandler mInstallReferrerConnectionHandler;
     private boolean mFlushEventsOnResume;
     private boolean mFlushAndUploadEventsOnResume;
 
@@ -97,9 +96,8 @@ public class AppMetrTrackingManager {
 
         mFileList = mPreferences.getFileList();
 
-        if(!mPreferences.getIsFirstTrackSessionSent()) {
-            mInstallReferrerConnectionHandler = new InstallReferrerConnectionHandler();
-            mInstallReferrerConnectionHandler.connect(context, mPreferences);
+        if(!mPreferences.getIsInstallReferrerTrackSent()) {
+            trackInstallReferrer();
         }
     }
 
@@ -313,40 +311,6 @@ public class AppMetrTrackingManager {
                 track(action);
                 flushAndUploadAllEventsAsync();
                 mPreferences.setIsFirstTrackSessionSent(true);
-
-                // track install referrer event
-                if(mInstallReferrerConnectionHandler == null) { // must be false always
-                    Log.w(TAG, "Install referrer not initialized on first launch. Creating new...");
-                    mInstallReferrerConnectionHandler = new InstallReferrerConnectionHandler();
-                    mInstallReferrerConnectionHandler.connect(mContextProxy.getContext(), mPreferences);
-                }
-                if (!mInstallReferrerConnectionHandler.onFinishConnection(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            JSONObject referrerProperties = new JSONObject();
-                            String installReferrer = mPreferences.getInstallReferrer();
-                            if(!TextUtils.isEmpty(installReferrer))
-                                referrerProperties.put("referrer", installReferrer);
-                            long referrerClickTimestamp = mPreferences.getInstallReferrerClickTimestampSeconds();
-                            if(referrerClickTimestamp > 0)
-                                referrerProperties.put("referrer_click_timestamp_seconds", referrerClickTimestamp);
-                            long  installBeginTimestamp = mPreferences.getInstallBeginTimestampSeconds();
-                            if(installBeginTimestamp > 0)
-                                referrerProperties.put("install_begin_timestamp_seconds", installBeginTimestamp);
-
-                            track(new JSONObject()
-                                    .put("action", "trackEvent")
-                                    .put("event", "install_referrer")
-                                    .put("properties", referrerProperties));
-                        } catch (JSONException error) {
-                            Log.e(TAG, "track referrer event failed", error);
-                        }
-                    }
-                })) {
-                    Log.w(TAG, "Install referrer already send install event");
-                }
                 return;
             } else if(duration <= 0)
                 return;// not first launch and session duration is empty, ignoring
@@ -655,7 +619,39 @@ public class AppMetrTrackingManager {
         mPreferences.setSessionDurationCurrent(0);
     }
 
+    private void trackInstallReferrer() {
+        InstallReferrerConnectionHandler installReferrerConnectionHandler = new InstallReferrerConnectionHandler();
+        installReferrerConnectionHandler.connect(mContextProxy.getContext(), mPreferences);
+        if (!installReferrerConnectionHandler.onFinishConnection(new Runnable() {
 
+            @Override
+            public void run() {
+                try {
+                    JSONObject referrerProperties = new JSONObject();
+                    String installReferrer = mPreferences.getInstallReferrer();
+                    if(!TextUtils.isEmpty(installReferrer))
+                        referrerProperties.put("referrer", installReferrer);
+                    long referrerClickTimestamp = mPreferences.getInstallReferrerClickTimestampSeconds();
+                    if(referrerClickTimestamp > 0)
+                        referrerProperties.put("referrer_click_timestamp_seconds", referrerClickTimestamp);
+                    long  installBeginTimestamp = mPreferences.getInstallBeginTimestampSeconds();
+                    if(installBeginTimestamp > 0)
+                        referrerProperties.put("install_begin_timestamp_seconds", installBeginTimestamp);
+
+                    track(new JSONObject()
+                            .put("action", "trackEvent")
+                            .put("event", "install_referrer")
+                            .put("properties", referrerProperties));
+
+                    mPreferences.setIsInstallReferrerTrackSent(true);
+                } catch (JSONException error) {
+                    Log.e(TAG, "track referrer event failed", error);
+                }
+            }
+        })) {
+            Log.w(TAG, "Install referrer already send install event");
+        }
+    }
 
     protected boolean verifyPaymentAndCheck(String purchaseInfo, String receipt, String privateKey) {
         try {
