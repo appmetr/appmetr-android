@@ -62,6 +62,8 @@ public class InstallReferrerConnectionHandler implements InstallReferrerStateLis
                 default:
                     Log.w(TAG, "Response code not recognized");
             }
+            mPreferences.setIsInstallReferrerTrackSent(mPreferences.getIsInstallReferrerTrackSent()
+                    || responseCode != InstallReferrerResponse.SERVICE_DISCONNECTED);
         }
 
         mReferrerClient = null;
