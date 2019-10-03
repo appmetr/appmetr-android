@@ -40,11 +40,6 @@ public class LibraryPreferences {
     public static final int TOKEN_MAX_SIZE = 50;
 
     /**
-     * The salt for MD5 hashes
-     */
-    public static final String MD5_SALT = "frADufaQaYE4rep";
-
-    /**
      * The maximum time in seconds to wait before shutdown ThreadPoolExecutor
      */
     public static final int THREAD_POOL_TERMINATION_TIMEOUT_IN_SEC = 5; // 5 seconds
@@ -62,7 +57,6 @@ public class LibraryPreferences {
     private static final String BATCH_ID_KEY = "AppMetr-BatchID";
     private static final String FILE_INDEX_PROP_NAME = "AppMetr-FileIndex";
     private static final String FILE_LIST_PROP_NAME = "AppMetr-FileList";
-    private static final String INSTALL_URL_PROP_NAME = "AppMetr-InstallURLTracked";
     private static final String FIRST_TRACK_SESSION_SENTPROP_NAME = "AppMetr-FirstTrackSessionSent";
     private static final String SESSION_DURATION_PROP_NAME = "AppMetr-SessionDuration";
     private static final String SESSION_DURATION_CURRENT_PROP_NAME = "AppMetr-SessionDurationCurrent";
@@ -218,24 +212,6 @@ public class LibraryPreferences {
         }
 
         return ret;
-    }
-
-    /**
-     * Returns whether install URL is tracked or not
-     *
-     * @return True of install URL is already tracked, otherwise returns false
-     */
-    public boolean getIsInstallURLTracked() {
-        return mPreference.getBoolean(INSTALL_URL_PROP_NAME, false);
-    }
-
-    /**
-     * Sets whether install URL is tracked or not
-     */
-    public void setIsInstallURLTracked(boolean tracked) {
-        SharedPreferences.Editor editor = mPreference.edit();
-        editor.putBoolean(INSTALL_URL_PROP_NAME, tracked);
-        editor.apply();
     }
 
     /**

@@ -271,41 +271,6 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Registering advertising event track
-     * @param event Event to track
-     */
-    public static void trackAdsEvent(String event) {
-        try {
-            JSONObject action = new JSONObject().put("action", "adsEventBroadcast");
-            action.put("event", event);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "adsEventBroadcast failed", error);
-        }
-    }
-
-    /**
-     * Registering the URL of game installation
-     *
-     * @param url The string with URL to register
-     */
-    public static void trackInstallURL(String url) {
-        try {
-            if (!getInstance().mPreferences.getIsInstallURLTracked()) {
-                JSONObject action = new JSONObject().put("action", "trackInstallURL");
-                action.put("installURL", url);
-
-                msInstance.track(action);
-                msInstance.flushAndUploadAllEventsAsync();
-                msInstance.mPreferences.setIsInstallURLTracked(true);
-            }
-        } catch (JSONException error) {
-            Log.e(TAG, "trackInstallURL failed", error);
-        }
-    }
-
-    /**
      * Track experiment
      *
      * @param experiment Experiment name, which is to be started
@@ -372,18 +337,6 @@ public class AppMetr extends AppMetrTrackingManager {
         } catch (JSONException error) {
             Log.e(TAG, "Identify failed", error);
         }
-    }
-
-    /**
-     * Verify payment
-     *
-     * @param purchaseInfo - getOriginalJson().toString() for Purchase object
-     * @param signature - getSignature() for Purchase object
-     * @param privateKey - set in deploy setting on appmetr server
-     * @return true - if payment is valid, and false otherwise
-     */
-    public static boolean verifyPayment(String purchaseInfo, String signature, String privateKey) {
-        return getInstance().verifyPaymentAndCheck(purchaseInfo, signature, privateKey);
     }
 
     /**

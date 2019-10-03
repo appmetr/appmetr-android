@@ -180,20 +180,6 @@ public class AppMetrTest extends BaseAppMetrDummyActivityTest {
                 + "BuLCBvLCBwLCBxLCByLCBzLg==", res);
     }
 
-    public void testTrackInstallURL() throws DataFormatException {
-        AppMetrDirtyHack testLibrary = createTestApi();
-//		AppMetrDirtyHack.onPause();
-
-        ArrayList<String> fileList = testLibrary.getDirtyFileList();
-        fileList.clear();
-
-        AppMetrDirtyHack.trackInstallURL("http://android.appmetr.com/unit/test");
-        testLibrary.dirtyFlushDataImpl();
-        AppMetrDirtyHack.onPause();
-
-        assertEquals("Failed to track installation URL", 0, testLibrary.getDirtyFileList().size());
-    }
-
     public void testDeviceKey() throws Exception {
         AppMetrDirtyHack testLibrary = createTestApi();
         String deviceKey = testLibrary.getDeviceKey();
