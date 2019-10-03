@@ -78,30 +78,6 @@ public class Utils {
         return event;
     }
 
-    /**
-     * Calculate md5 hash for string `data`
-     *
-     * @param data - string for making signature
-     * @return md5 hash result
-     * @throws NoSuchAlgorithmException
-     */
-    public static String md5(String data) throws NoSuchAlgorithmException {
-        final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-        final StringBuilder builder = new StringBuilder(32); //32 - MD5 string length (16 digest)
-        final Formatter fmt = new Formatter(builder);
-
-        messageDigest.reset();
-        messageDigest.update(data.getBytes());
-
-        final byte[] digest = messageDigest.digest();
-        for (byte value : digest) {
-            fmt.format("%02x", value);
-        }
-
-        fmt.close();
-        return builder.toString();
-    }
-
     public static byte[] compressData(byte[] data) {
         Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION, true);
         byte[] buffer = new byte[data.length];

@@ -73,9 +73,6 @@ public class AppMetrTrackingManager {
     private final Lock mFlushCacheLock = new ReentrantLock();
     private final Lock mUploadCacheLock = new ReentrantLock();
 
-    protected final static String METHOD_TRACK = "server.track";
-    protected final static String METHOD_VERIFY_PAYMENT = "server.verifyPayment";
-
     private boolean mFlushEventsOnResume;
     private boolean mFlushAndUploadEventsOnResume;
 
@@ -648,30 +645,6 @@ public class AppMetrTrackingManager {
             }
         })) {
             Log.w(TAG, "Install referrer already send install event");
-        }
-    }
-
-    protected boolean verifyPaymentAndCheck(String purchaseInfo, String receipt, String privateKey) {
-        try {
-            String salt = Utils.md5("123567890:" + System.currentTimeMillis());
-
-            List<HttpNameValuePair> parameters = mRequestParameters.getForMethod(mContextProxy.getContext(), METHOD_VERIFY_PAYMENT);
-            parameters.add((new HttpNameValuePair("purchase", purchaseInfo)));
-            parameters.add((new HttpNameValuePair("receipt", receipt)));
-            parameters.add((new HttpNameValuePair("salt", salt)));
-
-            JSONObject response = mWebServiceRequest.sendRequest(parameters);
-
-            boolean ret = response.getString("status").compareTo("valid") == 0;
-            if (ret) {
-                JSONObject purchase = new JSONObject(purchaseInfo);
-                String purchaseToken = purchase.getString("purchaseToken");
-                ret = response.getString("sig").equals(Utils.md5(purchaseToken + ":" + salt + ":" + privateKey));
-            }
-            return ret;
-        } catch (final Throwable t) {
-            Log.e(TAG, "Failed to validate payment", t);
-            return false;
         }
     }
 
