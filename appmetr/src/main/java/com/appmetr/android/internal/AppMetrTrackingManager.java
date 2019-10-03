@@ -73,9 +73,6 @@ public class AppMetrTrackingManager {
     private final Lock mFlushCacheLock = new ReentrantLock();
     private final Lock mUploadCacheLock = new ReentrantLock();
 
-    protected final static String METHOD_TRACK = "server.track";
-    protected final static String METHOD_VERIFY_PAYMENT = "server.verifyPayment";
-
     private boolean mFlushEventsOnResume;
     private boolean mFlushAndUploadEventsOnResume;
 
