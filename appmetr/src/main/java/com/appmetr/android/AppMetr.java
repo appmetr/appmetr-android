@@ -175,36 +175,6 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Method for tracking game event as "track level" with parameters.
-     *
-     * @param level - parameter required for this event. Displays player's level.
-     */
-    public static void trackLevel(int level) {
-        trackLevel(level, null);
-    }
-
-    /**
-     * Method for tracking game event as "track level" with parameter "level"
-     * and additional parameters.
-     *
-     * @param level      - parameter required for this event. Displays player's level.
-     * @param properties - additional parameter for this event.
-     */
-    public static void trackLevel(int level, JSONObject properties) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackLevel");
-            action.put("level", level);
-            if (properties != null) {
-                action.put("properties", properties);
-            }
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackLevel failed", error);
-        }
-    }
-
-    /**
      * Method for tracking game event as "track event" with parameter "event".
      *
      * @param event - required field. Displays event's name
@@ -267,42 +237,6 @@ public class AppMetr extends AppMetrTrackingManager {
             getInstance().track(payment);
         } catch (JSONException error) {
             Log.e(TAG, "trackPayment failed", error);
-        }
-    }
-
-    /**
-     * Track experiment
-     *
-     * @param experiment Experiment name, which is to be started
-     * @param group      Group name for experiment
-     */
-    public static void trackExperimentStart(String experiment, String group) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackExperiment");
-            action.put("status", "ON");
-            action.put("experiment", experiment);
-            action.put("group", group);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
-     * Track experiment
-     *
-     * @param experiment Experiment name, which is to be ended
-     */
-    public static void trackExperimentEnd(String experiment) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackExperiment");
-            action.put("status", "END");
-            action.put("experiment", experiment);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackExperiment failed", error);
         }
     }
 

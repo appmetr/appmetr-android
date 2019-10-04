@@ -35,28 +35,6 @@ public class AppMetrHelper {
     }
 
     /**
-     * Method for tracking game event as "track level" without parameters
-     */
-    public static void trackLevel(int level) {
-        try {
-            AppMetr.trackLevel(level);
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackLevel failed", error);
-        }
-    }
-
-    /**
-     * Method for tracking game event as "track level" with parameters
-     */
-    public static void trackLevel(int level, String serializedProperties) {
-        try {
-            AppMetr.trackLevel(level, new JSONObject(serializedProperties));
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackLevel failed", error);
-        }
-    }
-
-    /**
      * Methods for tracking game event as "attach properties"
      */
     public static void attachProperties() {
@@ -138,28 +116,6 @@ public class AppMetrHelper {
             AppMetr.trackEvent(event, new JSONObject(serializedProperties));
         } catch (final Throwable error) {
             Log.e(TAG, "trackEvent failed", error);
-        }
-    }
-
-    /**
-     * Method for tracking experiment start
-     */
-    public static void trackExperimentStart(String experiment, String group) {
-        try {
-            AppMetr.trackExperimentStart(experiment, group);
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
-     * Method for tracking experiment end
-     */
-    public static void trackExperimentEnd(String experiment) {
-        try {
-            AppMetr.trackExperimentEnd(experiment);
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackExperiment failed", error);
         }
     }
 

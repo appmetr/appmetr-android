@@ -16,7 +16,6 @@ public class AcceptanceTest extends BaseAppMetrDummyActivityTest {
 
         AppMetrDirtyHack.attachProperties(new JSONObject().put("abGroup", "red").put("$adRef", "test"));
         AppMetrDirtyHack.trackSession(new JSONObject().put("$level", 80));
-        AppMetrDirtyHack.trackLevel(81, new JSONObject().put("abGroup", "blue"));
         AppMetrDirtyHack.trackEvent("test/test");
 
         testLibrary.dirtyFlushDataImpl();
@@ -24,7 +23,6 @@ public class AcceptanceTest extends BaseAppMetrDummyActivityTest {
 
         AppMetrDirtyHack.attachProperties(new JSONObject().put("abGroup", "red").put("$adRef", "test"));
         AppMetrDirtyHack.trackSession();
-        AppMetrDirtyHack.trackLevel(82, new JSONObject().put("abGroup", "green"));
         AppMetrDirtyHack.trackEvent("test/test2");
 
         testLibrary.dirtyFlushDataImpl();
@@ -101,7 +99,6 @@ public class AcceptanceTest extends BaseAppMetrDummyActivityTest {
 
         AppMetrDirtyHack.attachProperties(new JSONObject().put("abGroup", "red").put("adRef", "test"));
         AppMetrDirtyHack.trackSession(new JSONObject().put("level", 80));
-        AppMetrDirtyHack.trackLevel(81, new JSONObject().put("abGroup", "blue"));
         AppMetrDirtyHack.trackEvent("test/test");
 
         AppMetrDirtyHack.trackPayment(new JSONObject().put("processor", "mm")
@@ -114,7 +111,6 @@ public class AcceptanceTest extends BaseAppMetrDummyActivityTest {
 
         AppMetrDirtyHack.attachProperties(new JSONObject().put("abGroup", "red").put("adRef", "test"));
         AppMetrDirtyHack.trackSession();
-        AppMetrDirtyHack.trackLevel(82, new JSONObject().put("abGroup", "green"));
         AppMetrDirtyHack.trackEvent("test/test2");
 
         AppMetrDirtyHack.trackPayment(new JSONObject().put("processor", "mm")

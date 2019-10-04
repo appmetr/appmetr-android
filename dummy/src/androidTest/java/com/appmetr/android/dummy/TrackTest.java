@@ -69,39 +69,6 @@ public class TrackTest extends BaseAppMetrDummyActivityTest {
         assertNotNull("Invalid property value", propertyValue.compareTo("prop-value"));
     }
 
-    public void testTrackLevel() throws Exception {
-        AppMetrDirtyHack testLibrary;
-        testLibrary = new AppMetrDirtyHack(getActivity());
-        testLibrary.initialize("TestThisLibrary");
-        ArrayList<JSONObject> eventList = testLibrary.getDirtyEventList();
-
-        // test 1
-        int level = 81;
-        AppMetrDirtyHack.trackLevel(level);
-        JSONObject actionOne = eventList.get(eventList.size() - 1);
-        String actionName = actionOne.getString("action");
-
-        assertNotNull("Invalid action", actionName.compareTo("trackLevel"));
-        assertNotNull("Missing timestamp", actionOne.get("timestamp"));
-
-        assertTrue("Invalid level", actionOne.getInt("level") == level);
-
-        // test 2
-        level = 42;
-        AppMetrDirtyHack.trackLevel(level, this.anyProperties());
-        JSONObject actionTwo = eventList.get(eventList.size() - 1);
-
-        actionName = actionTwo.getString("action");
-        assertNotNull("Invalid action", actionName.compareTo("trackLevel"));
-        assertNotNull("Missing timestamp", actionTwo.get("timestamp"));
-
-        assertTrue("Invalid level", actionTwo.getInt("level") == level);
-
-        JSONObject properties = (JSONObject) actionTwo.get("properties");
-        String propertyValue = properties.getString("prop-key");
-        assertNotNull("Invalid property value", propertyValue.compareTo("prop-value"));
-    }
-
     public void testTrackEvent() throws Exception {
         AppMetrDirtyHack testLibrary;
         testLibrary = new AppMetrDirtyHack(getActivity());
@@ -190,15 +157,6 @@ public class TrackTest extends BaseAppMetrDummyActivityTest {
         assertEquals("Invalid action", resultsLong.getString("action"), "trackEvent");
         assertEquals("Invalid event name", resultsLong.getString("event"), "customTimestamp1");
         assertEquals("Invalid custom date", resultsLong.getLong("timestamp"), testDate1.getTime());
-
-        // test Date as Date
-        Date testDate2 = new GregorianCalendar(2018, Calendar.MARCH, 1).getTime();
-        JSONObject propertiesDate = new JSONObject().put("timestamp", testDate2);
-        AppMetrDirtyHack.trackLevel(5, propertiesDate);
-        JSONObject resultsDate = eventList.get(eventList.size() - 1);
-        assertEquals("Invalid action", resultsDate.getString("action"), "trackLevel");
-        assertEquals("Invalid level", resultsDate.getInt("level"), 5);
-        assertEquals("Invalid custom date", resultsDate.getLong("timestamp"), testDate2.getTime());
 
         // test Date as wrong argument
         Date testDate3 = new GregorianCalendar(2018, Calendar.APRIL, 10).getTime();

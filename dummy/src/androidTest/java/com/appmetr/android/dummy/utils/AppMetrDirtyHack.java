@@ -55,72 +55,9 @@ public class AppMetrDirtyHack extends AppMetr {
     }
 
     public boolean trackMethodsTest() {
-        JSONObject properties = new JSONObject();
-        try {
-            properties.put("test", "test");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        AppMetrDirtyHack.trackLevel(10, properties);
         AppMetrDirtyHack.trackEvent("firstEvent");
-        boolean res = (mEventList.size() == 2);
+        boolean res = (mEventList.size() == 1);
         return res;
-    }
-
-    public boolean eventListTimestampTest() {
-        synchronized (mEventList) {
-
-            mEventList.clear();
-            JSONObject properties = new JSONObject();
-            try {
-                properties.put("test", "test");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            AppMetr.trackLevel(1, properties);
-            AppMetr.trackEvent("firstEvent");
-            AppMetr.trackEvent("firstEvent");
-
-            JSONObject obj = mEventList.get(0);
-            try {
-                JSONObject resProperties = (JSONObject) obj.get("properties");
-                String res = (String) resProperties.get("test");
-                if (res.compareTo("test") == 0)
-                    return true;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return false;
-    }
-
-    public boolean eventListValidationDateTest() {
-        mEventList.clear();
-        JSONObject properties = new JSONObject();
-
-        try {
-            properties.put("test", "test");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        Date nowDate = new Date();
-        long prevTime = nowDate.getTime();
-        AppMetrDirtyHack.trackLevel(10, properties);
-
-        JSONObject obj = mEventList.get(0);
-
-        Date afterDate = new Date();
-        long afterTime = afterDate.getTime();
-
-        try {
-            long testTime = obj.getLong("timestamp");
-            if ((prevTime < testTime) && (testTime < afterTime))
-                return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     public boolean eventListValidationCompleteTest() {
