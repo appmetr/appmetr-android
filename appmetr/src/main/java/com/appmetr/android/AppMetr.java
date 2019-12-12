@@ -328,14 +328,16 @@ public class AppMetr extends AppMetrTrackingManager {
      * @param userId - user id
      */
     public static void identify(String userId) {
-        msInstance.mPreferences.setUserIdentity(userId);
+
         try {
             JSONObject action = new JSONObject().put("action", "identify");
+            action.put("userId", userId);
             getInstance().track(action);
             getInstance().flushAndUploadAllEventsAsync();
         } catch (JSONException error) {
             Log.e(TAG, "Identify failed", error);
         }
+        msInstance.mPreferences.setUserIdentity(userId);
     }
 
     /**

@@ -266,7 +266,7 @@ public class AppMetrTrackingManager {
             event.put(AppmetrConstants.PROPERTY_TIMESTAMP, System.currentTimeMillis());
             String userIdentity = mPreferences.getUserIdentity();
             if(!TextUtils.isEmpty(userIdentity)) {
-                event.put("userId", userIdentity);
+                event.put("serverUserId", userIdentity);
             }
             JSONObject convertedEvent = Utils.convertDateToLong(event);
             synchronized (mEventList) {
