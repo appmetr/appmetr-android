@@ -3,6 +3,7 @@ package com.appmetr.android.internal;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
@@ -64,6 +65,7 @@ public class LibraryPreferences {
     private static final String INSTALL_REFERRER_CLICK_TIMESTAMP_SECONDS_PROP_NAME = "AppMetr-InstallReferrerClickTimestampSeconds";
     private static final String INSTALL_BEGIN_TIMESTAMP_SECONDS_PROP_NAME = "AppMetr-InstallBeginTimestampSeconds";
     private static final String INSTALL_REFERRER_TRACK_NAME = "AppMetr-InstallReferrerSent";
+    private static final String USER_IDENTITY = "AppMetr-UserIdentity";
 
     /**
      * An application shred preferences
@@ -75,7 +77,7 @@ public class LibraryPreferences {
     private Integer mLastFileIndex;
     private final Object mLastFileIndexMutex = new Object();
     private boolean mIsFirstTrackSessionSent;
-
+    private String mUserIdentity;
     private long mSessionDuration;
     private long mSessionDurationCurrent;
 
@@ -88,6 +90,7 @@ public class LibraryPreferences {
         mCurrentBatchID = Integer.valueOf(getFirstBatchID());
         mLastFileIndex = Integer.valueOf(mPreference.getInt(FILE_INDEX_PROP_NAME, 0));
         mIsFirstTrackSessionSent = getIsFirstTrackSessionSent();
+        mUserIdentity = mPreference.getString(USER_IDENTITY, null);
         mSessionDuration = mPreference.getLong(SESSION_DURATION_PROP_NAME, 0);
         mSessionDurationCurrent = mPreference.getLong(SESSION_DURATION_CURRENT_PROP_NAME, 0);
     }
@@ -229,6 +232,23 @@ public class LibraryPreferences {
         mIsFirstTrackSessionSent = sent;
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putBoolean(FIRST_TRACK_SESSION_SENTPROP_NAME, mIsFirstTrackSessionSent);
+        editor.apply();
+    }
+
+    public String getUserIdentity() {
+        return mUserIdentity;
+    }
+
+    public void setUserIdentity(String userIdentity) {
+        if(mUserIdentity != null && mUserIdentity.equals(userIdentity)) return;
+        mUserIdentity = userIdentity;
+        SharedPreferences.Editor editor = mPreference.edit();
+        if(!TextUtils.isEmpty(mUserIdentity)) {
+            editor.putString(USER_IDENTITY, mUserIdentity);
+        } else {
+            editor.remove(USER_IDENTITY);
+            mUserIdentity = null;
+        }
         editor.apply();
     }
 
