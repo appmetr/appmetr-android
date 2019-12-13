@@ -19,11 +19,8 @@ import androidx.annotation.NonNull;
 
 import com.appmetr.android.BuildConfig;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
-import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
 
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -286,8 +283,8 @@ public class RequestParameters {
     }
 
     private static String getHash(String data) {
-        if(TextUtils.isEmpty(data))
+        if (TextUtils.isEmpty(data))
             return data;
-        return Hashing.murmur3_128().hashString(data.toLowerCase(Locale.US), Charsets.UTF_8).toString();
+        return new MurmurHash3().putString(data.toLowerCase(Locale.US)).hashString();
     }
 }
