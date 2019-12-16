@@ -22,36 +22,6 @@ public class CasesTabActivity extends AbstractTabActivity {
     }
 
     private void initializeListeners() {
-        Button buttonTrackStart = (Button) findViewById(R.id.buttonTrackStart);
-        buttonTrackStart.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
-                EditText editExperimentName = (EditText) findViewById(R.id.editExperimentName);
-                EditText editGroupName = (EditText) findViewById(R.id.editGroupName);
-
-                String experimentName = editExperimentName.getText().toString();
-                String groupName = editGroupName.getText().toString();
-
-                if (experimentName.length() > 0 && groupName.length() > 0) {
-                    AppMetr.trackExperimentStart(experimentName, groupName);
-                    logMessage(String.format("Track experiment start \"%1$s\" group \"%2$s\"", experimentName, groupName));
-                }
-            }
-        });
-
-        Button buttonTrackEnd = (Button) findViewById(R.id.buttonTrackEnd);
-        buttonTrackEnd.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
-                EditText editExperimentName = (EditText) findViewById(R.id.editExperimentName);
-
-                String experimentName = editExperimentName.getText().toString();
-
-                if (experimentName.length() > 0) {
-                    AppMetr.trackExperimentEnd(experimentName);
-                    logMessage(String.format("Track experiment end \"%1$s\"", experimentName));
-                }
-            }
-        });
-
         Button buttonTrackPayment = (Button) findViewById(R.id.buttonTrackPayment);
         buttonTrackPayment.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {

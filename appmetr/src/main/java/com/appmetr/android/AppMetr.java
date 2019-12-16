@@ -292,42 +292,6 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Track experiment
-     *
-     * @param experiment Experiment name, which is to be started
-     * @param group      Group name for experiment
-     */
-    public static void trackExperimentStart(String experiment, String group) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackExperiment");
-            action.put("status", "ON");
-            action.put("experiment", experiment);
-            action.put("group", group);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
-     * Track experiment
-     *
-     * @param experiment Experiment name, which is to be ended
-     */
-    public static void trackExperimentEnd(String experiment) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackExperiment");
-            action.put("status", "END");
-            action.put("experiment", experiment);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
      * Track user state
      *
      * @param state - key-value data with user state
