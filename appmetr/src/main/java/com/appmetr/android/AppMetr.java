@@ -175,6 +175,36 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
+     * Method for tracking game event as "track level" with parameters.
+     *
+     * @param level - parameter required for this event. Displays player's level.
+     */
+    public static void trackLevel(int level) {
+        trackLevel(level, null);
+    }
+
+    /**
+     * Method for tracking game event as "track level" with parameter "level"
+     * and additional parameters.
+     *
+     * @param level      - parameter required for this event. Displays player's level.
+     * @param properties - additional parameter for this event.
+     */
+    public static void trackLevel(int level, JSONObject properties) {
+        try {
+            JSONObject action = new JSONObject().put("action", "trackLevel");
+            action.put("level", level);
+            if (properties != null) {
+                action.put("properties", properties);
+            }
+
+            getInstance().track(action);
+        } catch (JSONException error) {
+            Log.e(TAG, "trackLevel failed", error);
+        }
+    }
+
+    /**
      * Method for tracking game event as "track event" with parameter "event".
      *
      * @param event - required field. Displays event's name
