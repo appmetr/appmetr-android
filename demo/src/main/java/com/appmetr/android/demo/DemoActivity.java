@@ -70,7 +70,7 @@ public class DemoActivity extends TabActivity {
 
     @Override protected void onResume() {
         super.onResume();
-        AppMetr.onResume();
+        AppMetr.onResume(this);
     }
 
     @Override protected void onPause() {

@@ -7,8 +7,8 @@ android {
         applicationId "com.appmetr.android.demo"
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 11600
-        versionName "1.16.0"
+        versionCode 11700
+        versionName "1.17.0"
     }
     buildTypes {
         release {
@@ -21,5 +21,5 @@ android {
 dependencies {
     implementation project(":appmetr")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
 }

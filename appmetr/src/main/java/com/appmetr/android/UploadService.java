@@ -55,12 +55,17 @@ public class UploadService extends IntentService {
         if (pm != null) {
             PowerManager.WakeLock wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getCanonicalName());
             try {
-                wakelock.acquire(120000);
+                wakelock.acquire(180000);
                 runnable.run();
             } catch (Throwable t) {
                 t.printStackTrace();
             } finally {
-                wakelock.release();
+                try {
+                    if(wakelock != null && wakelock.isHeld())
+                        wakelock.release();
+                } catch(Throwable t) {
+                    t.printStackTrace();
+                }
             }
         } else { // this is very strange situation
             runnable.run();

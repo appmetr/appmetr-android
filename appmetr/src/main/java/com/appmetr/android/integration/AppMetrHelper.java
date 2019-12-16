@@ -142,28 +142,6 @@ public class AppMetrHelper {
     }
 
     /**
-     * Method for tracking experiment start
-     */
-    public static void trackExperimentStart(String experiment, String group) {
-        try {
-            AppMetr.trackExperimentStart(experiment, group);
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
-     * Method for tracking experiment end
-     */
-    public static void trackExperimentEnd(String experiment) {
-        try {
-            AppMetr.trackExperimentEnd(experiment);
-        } catch (final Throwable error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
      * Method for track user state
      */
     public static void trackState(String state) {

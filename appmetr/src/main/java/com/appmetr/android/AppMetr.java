@@ -4,14 +4,16 @@
  */
 package com.appmetr.android;
 
+import android.app.Activity;
 import android.content.Context;
-import android.os.Handler;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.internal.AppMetrTrackingManager;
 import com.appmetr.android.internal.ContextProxy;
 import com.appmetr.android.internal.Utils;
-import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +31,7 @@ public class AppMetr extends AppMetrTrackingManager {
     protected static AppMetr msInstance;
 
     private final static Lock msLibraryInitializationLock = new ReentrantLock();
+    private static String mLastLaunchUri = null;
 
     /**
      * Static method. It returns an instance of library.
@@ -51,6 +54,14 @@ public class AppMetr extends AppMetrTrackingManager {
      */
     protected AppMetr(Context context) {
         super(context);
+    }
+
+    public static void setup(String token, Activity activity) throws DataFormatException, SecurityException {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "#setup from activity");
+        }
+        setup(token, activity.getApplicationContext());
+        trackLaunchIntent(activity);
     }
 
     /**
@@ -116,6 +127,16 @@ public class AppMetr extends AppMetrTrackingManager {
 
         // releasing thread lock
         msLibraryInitializationLock.unlock();
+    }
+
+    /**
+     * Public method which is called when application goes into foreground mode.
+     *
+     * @param activity - resumed activity for tracking additional session parameters
+     */
+    public static void onResume(Activity activity) {
+        onResume();
+        trackLaunchIntent(activity);
     }
 
     /**
@@ -271,42 +292,6 @@ public class AppMetr extends AppMetrTrackingManager {
     }
 
     /**
-     * Track experiment
-     *
-     * @param experiment Experiment name, which is to be started
-     * @param group      Group name for experiment
-     */
-    public static void trackExperimentStart(String experiment, String group) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackExperiment");
-            action.put("status", "ON");
-            action.put("experiment", experiment);
-            action.put("group", group);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
-     * Track experiment
-     *
-     * @param experiment Experiment name, which is to be ended
-     */
-    public static void trackExperimentEnd(String experiment) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackExperiment");
-            action.put("status", "END");
-            action.put("experiment", experiment);
-
-            getInstance().track(action);
-        } catch (JSONException error) {
-            Log.e(TAG, "trackExperiment failed", error);
-        }
-    }
-
-    /**
      * Track user state
      *
      * @param state - key-value data with user state
@@ -328,15 +313,16 @@ public class AppMetr extends AppMetrTrackingManager {
      * @param userId - user id
      */
     public static void identify(String userId) {
+
         try {
             JSONObject action = new JSONObject().put("action", "identify");
             action.put("userId", userId);
-
             getInstance().track(action);
             getInstance().flushAndUploadAllEventsAsync();
         } catch (JSONException error) {
             Log.e(TAG, "Identify failed", error);
         }
+        msInstance.mPreferences.setUserIdentity(userId);
     }
 
     /**
@@ -400,5 +386,19 @@ public class AppMetr extends AppMetrTrackingManager {
         }
 
         return result + ":" + getUserId();
+    }
+
+    private static void trackLaunchIntent(Activity activity) {
+        Intent launchIntent = activity.getIntent();
+        if(launchIntent == null) return;
+        Uri launchUri = launchIntent.getData();
+        String launchUriStr = launchUri == null ? null : launchUri.toString();
+        if(TextUtils.isEmpty(launchUriStr) || launchUriStr.equals(mLastLaunchUri)) return;
+        mLastLaunchUri = launchUriStr;
+        try {
+            trackEvent("devices/launch_url", new JSONObject().put("link", launchUriStr));
+        } catch (JSONException error) {
+            Log.e(TAG, "TrackLaunchIntent failed", error);
+        }
     }
 }
