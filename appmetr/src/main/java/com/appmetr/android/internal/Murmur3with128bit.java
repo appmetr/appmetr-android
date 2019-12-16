@@ -13,7 +13,7 @@ import java.nio.charset.Charset;
  *
  * Source:
  * https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
- * (This is minified version of 128bit implementation )
+ * (This is minified version of 128bit implementation)
  */
 
 public final class Murmur3with128bit {
