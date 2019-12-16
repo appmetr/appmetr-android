@@ -7,8 +7,16 @@ import java.nio.charset.Charset;
 /**
  * Copyright (c) 2019 AppMetr.
  * All rights reserved.
+ *
+ * Murmur3with128bit was written by Austin Appleby, and is placed in the public
+ * domain. The author hereby disclaims copyright to this source code.
+ *
+ * Source:
+ * https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
+ * (This is minified version of 128bit implementation )
  */
-public final class MurmurHash3 {
+
+public final class Murmur3with128bit {
     private static final int CHUNK_SIZE = 16;
     private static final long C1 = 0x87c37b91114253d5L;
     private static final long C2 = 0x4cf5ad432745937fL;
@@ -18,11 +26,11 @@ public final class MurmurHash3 {
     private long h2;
     private int length;
 
-    public MurmurHash3() {
+    public Murmur3with128bit() {
         this(0);
     }
 
-    public MurmurHash3(int seed) {
+    public Murmur3with128bit(int seed) {
         this.buffer = ByteBuffer.allocate(CHUNK_SIZE + 7).order(ByteOrder.LITTLE_ENDIAN);
         this.h1 = seed;
         this.h2 = seed;
@@ -52,22 +60,22 @@ public final class MurmurHash3 {
         return k2;
     }
 
-    public MurmurHash3 putString(CharSequence charSequence) {
+    public Murmur3with128bit putString(CharSequence charSequence) {
         return putString(charSequence, Charset.forName("UTF-8"));
     }
 
-    public MurmurHash3 putString(CharSequence charSequence, Charset charset) {
+    public Murmur3with128bit putString(CharSequence charSequence, Charset charset) {
         return putBytes(charSequence.toString().getBytes(charset));
     }
 
-    public MurmurHash3 putBytes(byte[] bytes) {
+    public Murmur3with128bit putBytes(byte[] bytes) {
         for (byte aByte : bytes) {
             putByte(aByte);
         }
         return this;
     }
 
-    public MurmurHash3 putByte(byte b) {
+    public Murmur3with128bit putByte(byte b) {
         buffer.put(b);
         if (buffer.remaining() < 8) {
             munch();

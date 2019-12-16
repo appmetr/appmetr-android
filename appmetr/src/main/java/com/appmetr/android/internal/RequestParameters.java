@@ -283,8 +283,7 @@ public class RequestParameters {
     }
 
     private static String getHash(String data) {
-        if (TextUtils.isEmpty(data))
-            return data;
-        return new MurmurHash3().putString(data.toLowerCase(Locale.US)).hashString();
+        return TextUtils.isEmpty(data) ?
+                data : new Murmur3with128bit().putString(data.toLowerCase(Locale.US)).hashString();
     }
 }
