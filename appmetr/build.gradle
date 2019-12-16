@@ -26,7 +26,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.google.android.gms:play-services-ads-identifier:17.0.0'
     implementation 'com.android.installreferrer:installreferrer:1.0'
-    implementation 'com.google.guava:guava:28.0-android'
 }
 
 task clearLibraryJar(type: Delete) {
