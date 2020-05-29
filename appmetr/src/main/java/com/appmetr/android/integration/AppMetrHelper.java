@@ -36,10 +36,13 @@ public class AppMetrHelper {
 
     /**
      * Method for tracking game event as "track level" without parameters
+     *
+     * @deprecated Use attachProperties with $level=level instead
      */
+    @Deprecated
     public static void trackLevel(int level) {
         try {
-            AppMetr.trackLevel(level);
+            AppMetr.attachProperties(new JSONObject().put("$level", level));
         } catch (final Throwable error) {
             Log.e(TAG, "trackLevel failed", error);
         }
@@ -47,10 +50,15 @@ public class AppMetrHelper {
 
     /**
      * Method for tracking game event as "track level" with parameters
+     *
+     * @deprecated Use attachProperties with $level=level instead
      */
+    @Deprecated
     public static void trackLevel(int level, String serializedProperties) {
         try {
-            AppMetr.trackLevel(level, new JSONObject(serializedProperties));
+            JSONObject properties = new JSONObject(serializedProperties);
+            properties.put("$level", level);
+            AppMetr.attachProperties(properties);
         } catch (final Throwable error) {
             Log.e(TAG, "trackLevel failed", error);
         }
