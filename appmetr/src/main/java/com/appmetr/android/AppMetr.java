@@ -153,26 +153,9 @@ public class AppMetr extends AppMetrTrackingManager {
      */
     public static void attachProperties(JSONObject properties) {
         try {
-            if (properties == null) {
-                properties = new JSONObject();
-            }
-
+            properties = fillProperties(properties);
             JSONObject action = new JSONObject().put("action", "attachProperties");
             action.put("properties", properties);
-            properties.put("$version", ContextProxy.AppVersion);
-
-            if (!properties.has("$country")) {
-                properties.put("$country", Locale.getDefault().getCountry());
-            }
-
-            if (!properties.has("$language")) {
-                properties.put("$language", Locale.getDefault().getLanguage());
-            }
-
-            if(!properties.has("$locale")) {
-                properties.put("$locale", Locale.getDefault().toString());
-            }
-
             getInstance().track(action);
         } catch (JSONException error) {
             Log.e(TAG, "attachProperties failed", error);
@@ -183,7 +166,7 @@ public class AppMetr extends AppMetrTrackingManager {
      * Method for tracking game event as "track session" without parameters
      */
     public static void trackSession() {
-        getInstance().trackSessionImpl(null);
+        trackSession(null);
     }
 
     /**
@@ -192,6 +175,11 @@ public class AppMetr extends AppMetrTrackingManager {
      * @param properties - properties for event
      */
     public static void trackSession(JSONObject properties) {
+        try {
+            properties = fillProperties(properties);
+        } catch (JSONException error) {
+            Log.e(TAG, "trackSession fill properties failed", error);
+        }
         getInstance().trackSessionImpl(properties);
     }
 
@@ -199,7 +187,10 @@ public class AppMetr extends AppMetrTrackingManager {
      * Method for tracking game event as "track level" with parameters.
      *
      * @param level - parameter required for this event. Displays player's level.
+     *
+     * @deprecated Use attachProperties with $level=level instead
      */
+    @Deprecated
     public static void trackLevel(int level) {
         trackLevel(level, null);
     }
@@ -210,16 +201,17 @@ public class AppMetr extends AppMetrTrackingManager {
      *
      * @param level      - parameter required for this event. Displays player's level.
      * @param properties - additional parameter for this event.
+     *
+     * @deprecated Use attachProperties with $level=level instead
      */
+    @Deprecated
     public static void trackLevel(int level, JSONObject properties) {
-        try {
-            JSONObject action = new JSONObject().put("action", "trackLevel");
-            action.put("level", level);
-            if (properties != null) {
-                action.put("properties", properties);
-            }
 
-            getInstance().track(action);
+        try {
+            if(properties == null)
+                properties = new JSONObject();
+            properties.put("$level", level);
+            attachProperties(properties);
         } catch (JSONException error) {
             Log.e(TAG, "trackLevel failed", error);
         }
@@ -400,5 +392,25 @@ public class AppMetr extends AppMetrTrackingManager {
         } catch (JSONException error) {
             Log.e(TAG, "TrackLaunchIntent failed", error);
         }
+    }
+
+    private static JSONObject fillProperties(JSONObject properties) throws JSONException {
+        if(properties == null) {
+            properties = new JSONObject();
+        }
+        properties.put("$version", ContextProxy.AppVersion);
+
+        if (!properties.has("$country")) {
+            properties.put("$country", Locale.getDefault().getCountry());
+        }
+
+        if (!properties.has("$language")) {
+            properties.put("$language", Locale.getDefault().getLanguage());
+        }
+
+        if(!properties.has("$locale")) {
+            properties.put("$locale", Locale.getDefault().toString());
+        }
+        return properties;
     }
 }
