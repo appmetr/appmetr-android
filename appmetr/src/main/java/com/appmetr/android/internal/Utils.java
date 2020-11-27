@@ -77,21 +77,4 @@ public class Utils {
 
         return event;
     }
-
-    public static byte[] compressData(byte[] data) {
-        Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION, true);
-        byte[] buffer = new byte[data.length];
-        int length;
-        try {
-            deflater.setInput(data);
-            deflater.finish();
-            length = deflater.deflate(buffer);
-        } finally {
-            deflater.end();
-        }
-
-        byte[] result = new byte[length];
-        System.arraycopy(buffer, 0, result, 0, length);
-        return result;
-    }
 }
