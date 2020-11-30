@@ -508,10 +508,8 @@ public class AppMetrTrackingManager {
 
     /**
      * Private method that uploads list of files to server.
-     *
-     * @return - number of files which are uploaded.
      */
-    protected int uploadBatches() {
+    protected void uploadBatches() {
         // close current batch file
         try {
             closeCurrentFileWriter();
@@ -519,24 +517,27 @@ public class AppMetrTrackingManager {
             Log.e(TAG, "[uploadBatches] failed to close current batch file");
         }
 
-        int res = 0;
-        ArrayList<String> copyFileList;
-        synchronized (mFileList) {
-            copyFileList = new ArrayList<String>(mFileList);
-        }
-
+        int cursor = 0;
         UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
-        if ((res = uploadCacheTask.upload(copyFileList)) > 0) {
+        do {
+            String fileName;
             synchronized (mFileList) {
-                mFileList.removeAll(copyFileList);
+                if(mFileList.size() <= cursor) break;
+                fileName = mFileList.get(cursor);
             }
-            mPreferences.setFileList(mFileList);
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG, "[uploadBatches] " + res + " batches of " + copyFileList.size() + " uploaded successfully");
+            if(uploadCacheTask.uploadFile(fileName)) {
+                synchronized (mFileList) {
+                    mFileList.remove(fileName);
+                }
+                mPreferences.setFileList(mFileList);
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "[uploadBatches] File " + fileName + " uploaded successfully");
+                }
+            } else {
+                cursor++;
             }
-        }
 
-        return res;
+        } while (uploadCacheTask.getStatus() != UploadCacheTask.UploadStatus.NetworkError);
     }
 
 
