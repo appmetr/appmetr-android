@@ -42,10 +42,11 @@ public class WebServiceRequest {
      *         Else returns "false".
      */
     public boolean sendRequest(List<HttpNameValuePair> parameters, byte[] batches) throws IOException {
-        URL url = new URL(getUrlPath(parameters));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
+        HttpURLConnection connection = null;
         try {
+            URL url = new URL(getUrlPath(parameters));
+            connection = (HttpURLConnection) url.openConnection();
+
             // Add body data
             connection.setDoInput(true);
             connection.setDoOutput(true);
@@ -83,14 +84,10 @@ public class WebServiceRequest {
             }
         } catch (Exception error) {
             Log.e(TAG, "Server error", error);
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG,
-                        "Please, check rights for the app in AndroidManifest.xml."
-                                + " For the app to have access to the network the uses permission \"android.permission.INTERNET\" "
-                                + "must be set. You can find a detailed description here: http://developer.android.com/reference/android/Manifest.permission.html#INTERNET");
-            }
+            throw new IOException(error);
         } finally {
-            connection.disconnect();
+            if(connection != null)
+                connection.disconnect();
         }
 
         return false;
