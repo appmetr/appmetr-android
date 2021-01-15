@@ -26,6 +26,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * Base class for AppMetr
@@ -551,23 +554,29 @@ public class AppMetrTrackingManager {
 
         try {
             ByteArrayOutputStream uploadDataStream = null;
+            OutputStream outputStream = null;
             int index = 0;
+            int writeCount = 0;
             while(index < uploadList.size()) {
-                if(uploadDataStream == null) {
-                    uploadDataStream = new ByteArrayOutputStream();
-                    uploadDataStream.write("[".getBytes());
-                }
                 String uploadElem = uploadList.get(index++);
                 if(TextUtils.isEmpty(uploadElem))
                     continue;
-                if(uploadDataStream.size() > 1)
-                    uploadDataStream.write(",".getBytes());
-                uploadDataStream.write(uploadElem.getBytes());
-                if(index == uploadList.size() || uploadDataStream.size() > mMaxFileSize) {
-                    uploadDataStream.write("]".getBytes());
-                    uploadDataStream.close();
+                if(uploadDataStream == null) {
+                    uploadDataStream = new ByteArrayOutputStream();
+                }
+                if(outputStream == null) {
+                    outputStream = new DeflaterOutputStream(uploadDataStream, new Deflater(Deflater.BEST_COMPRESSION, true));
+                    outputStream.write("[".getBytes());
+                } else {
+                    outputStream.write(",".getBytes());
+                }
+                outputStream.write(uploadElem.getBytes());
+                writeCount += uploadElem.length() + 1;
+                if(index == uploadList.size() || writeCount >= mMaxFileSize) {
+                    outputStream.write("]".getBytes());
+                    outputStream.close();
                     UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
-                    if(uploadCacheTask.uploadData(Utils.compressData(uploadDataStream.toByteArray()))) {
+                    if(uploadCacheTask.uploadData(uploadDataStream.toByteArray())) {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "[uploadData] Direct events uploaded successfully");
                         }
@@ -582,6 +591,8 @@ public class AppMetrTrackingManager {
                         return;
                     }
                     uploadDataStream = null;
+                    outputStream = null;
+                    writeCount = 0;
                 }
             }
         } catch(IOException e) {
