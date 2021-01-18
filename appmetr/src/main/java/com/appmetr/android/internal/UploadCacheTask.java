@@ -82,7 +82,7 @@ public class UploadCacheTask {
                 return true;
             } else {
                 if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "Server error, break.");
+                    Log.d(TAG, "[uploadFile] Server error, break.");
                 }
                 mStatus = UploadStatus.NetworkError;
                 return false;
@@ -95,7 +95,10 @@ public class UploadCacheTask {
             mStatus = UploadStatus.IOError;
             return false;
         } catch (IOException ioError) {
-            Log.e(TAG, "[uploadFile] Failed to upload data to the server, IO error", ioError);
+            Log.e(TAG, "[uploadFile] Failed to upload data to the server, IO error. File will be deleted", ioError);
+            if(!mContextProxy.deleteFile(fileName)) {
+                Log.w(TAG, "[uploadFile] Failed to delete corrupted file. Skipping");
+            }
             mStatus = UploadStatus.IOError;
             return false;
         } finally {
@@ -127,8 +130,21 @@ public class UploadCacheTask {
 
         try {
             List<HttpNameValuePair> parameters = mRequestParameters.getForMethod(mContextProxy.getContext(), METHOD_TRACK);
-            return mWebServiceRequest.sendRequest(parameters, data);
+            if(mWebServiceRequest.sendRequest(parameters, data)) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "[uploadData] Server returns OK.");
+                }
+                mStatus = UploadStatus.Success;
+                return true;
+            } else {
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "[uploadData] Server error, break.");
+                }
+                mStatus = UploadStatus.NetworkError;
+                return false;
+            }
         } catch (IOException e) {
+            mStatus = UploadStatus.NetworkError;
             Log.e(TAG, "Failed to upload data to the server, IO error", e);
             return false;
         } finally {
@@ -142,6 +158,12 @@ public class UploadCacheTask {
     private boolean uploadBatchFile(String fileName, RequestParameters requestParameters) throws IOException {
         byte[] batchFileContent = mContextProxy.getFileContent(fileName);
         List<HttpNameValuePair> parameters = requestParameters.getForMethod(mContextProxy.getContext(), METHOD_TRACK);
-        return mWebServiceRequest.sendRequest(parameters, batchFileContent);
+        try {
+            return mWebServiceRequest.sendRequest(parameters, batchFileContent);
+        } catch(IOException e) {
+            Log.e(TAG, "Failed to upload batch file due to network error", e);
+            return false;
+        }
+
     }
 }

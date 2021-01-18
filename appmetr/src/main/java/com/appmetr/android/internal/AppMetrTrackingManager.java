@@ -520,24 +520,21 @@ public class AppMetrTrackingManager {
             Log.e(TAG, "[uploadBatches] failed to close current batch file");
         }
 
-        int cursor = 0;
         UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
         do {
             String fileName;
             synchronized (mFileList) {
-                if(mFileList.size() <= cursor) break;
-                fileName = mFileList.get(cursor);
+                if(mFileList.size() == 0) break;
+                fileName = mFileList.get(0);
             }
-            if(uploadCacheTask.uploadFile(fileName)) {
+            if(uploadCacheTask.uploadFile(fileName) || uploadCacheTask.getStatus() == UploadCacheTask.UploadStatus.IOError) {
                 synchronized (mFileList) {
                     mFileList.remove(fileName);
                 }
                 mPreferences.setFileList(mFileList);
-                if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "[uploadBatches] File " + fileName + " uploaded successfully");
-                }
-            } else {
-                cursor++;
+            }
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "[uploadBatches] File " + fileName + " uploaded with status " + uploadCacheTask.getStatus());
             }
 
         } while (uploadCacheTask.getStatus() != UploadCacheTask.UploadStatus.NetworkError);

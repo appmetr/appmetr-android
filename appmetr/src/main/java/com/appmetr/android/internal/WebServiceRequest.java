@@ -107,35 +107,4 @@ public class WebServiceRequest {
 
         return mUrlPath + res;
     }
-
-    public JSONObject sendRequest(List<HttpNameValuePair> parameters) throws IOException, JSONException, HttpException {
-        URL url = new URL(getUrlPath(parameters));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder result = new StringBuilder();
-            try {
-                String inputLine;
-                while ((inputLine = input.readLine()) != null) {
-                    result.append(inputLine);
-                }
-            } finally {
-                input.close();
-            }
-
-            if (connection.getResponseCode() >= 400) {
-                throw new HttpException("Invalid response code: " + connection.getResponseCode());
-            }
-
-            if (!connection.getContentType().contains("application/json")) {
-                throw new HttpException("Invalid content type: " + connection.getContentType());
-            }
-
-            return new JSONObject(result.toString());
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
 }
