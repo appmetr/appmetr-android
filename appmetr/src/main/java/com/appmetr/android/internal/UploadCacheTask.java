@@ -158,12 +158,15 @@ public class UploadCacheTask {
     private boolean uploadBatchFile(String fileName, RequestParameters requestParameters) throws IOException {
         byte[] batchFileContent = mContextProxy.getFileContent(fileName);
         List<HttpNameValuePair> parameters = requestParameters.getForMethod(mContextProxy.getContext(), METHOD_TRACK);
+        return sendWebRequest(parameters, batchFileContent);
+    }
+
+    private boolean sendWebRequest(List<HttpNameValuePair> parameters, byte[] content) {
         try {
-            return mWebServiceRequest.sendRequest(parameters, batchFileContent);
+            return mWebServiceRequest.sendRequest(parameters, content);
         } catch(IOException e) {
-            Log.e(TAG, "Failed to upload batch file due to network error", e);
+            Log.e(TAG, "[sendWebRequest] Failed with network error", e);
             return false;
         }
-
     }
 }

@@ -524,7 +524,7 @@ public class AppMetrTrackingManager {
         do {
             String fileName;
             synchronized (mFileList) {
-                if(mFileList.size() == 0) break;
+                if(mFileList.isEmpty()) break;
                 fileName = mFileList.get(0);
             }
             if(uploadCacheTask.uploadFile(fileName) || uploadCacheTask.getStatus() == UploadCacheTask.UploadStatus.IOError) {
@@ -544,7 +544,7 @@ public class AppMetrTrackingManager {
     protected void uploadData() {
         ArrayList<String> uploadList;
         synchronized (mUploadList) {
-            if(mUploadList.size() == 0)
+            if(mUploadList.isEmpty())
                 return;
             uploadList = new ArrayList<String>(mUploadList);
         }
@@ -598,7 +598,7 @@ public class AppMetrTrackingManager {
     }
 
     private void uploadCacheDeferred() {
-        if(mFileList.size() == 0)
+        if(mFileList.isEmpty())
             return;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             PersistableBundle extras = new PersistableBundle();
