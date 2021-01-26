@@ -511,10 +511,8 @@ public class AppMetrTrackingManager {
 
     /**
      * Private method that uploads list of files to server.
-     *
-     * @return - number of files which are uploaded.
      */
-    protected int uploadBatches() {
+    protected void uploadBatches() {
         // close current batch file
         try {
             closeCurrentFileWriter();
@@ -522,31 +520,31 @@ public class AppMetrTrackingManager {
             Log.e(TAG, "[uploadBatches] failed to close current batch file");
         }
 
-        int res = 0;
-        ArrayList<String> copyFileList;
-        synchronized (mFileList) {
-            copyFileList = new ArrayList<String>(mFileList);
-        }
-
         UploadCacheTask uploadCacheTask = new UploadCacheTask(mContextProxy, mWebServiceRequest, mRequestParameters);
-        if ((res = uploadCacheTask.upload(copyFileList)) > 0) {
+        do {
+            String fileName;
             synchronized (mFileList) {
-                mFileList.removeAll(copyFileList);
+                if(mFileList.isEmpty()) break;
+                fileName = mFileList.get(0);
             }
-            mPreferences.setFileList(mFileList);
+            if(uploadCacheTask.uploadFile(fileName) || uploadCacheTask.getStatus() == UploadCacheTask.UploadStatus.IOError) {
+                synchronized (mFileList) {
+                    mFileList.remove(fileName);
+                }
+                mPreferences.setFileList(mFileList);
+            }
             if (BuildConfig.DEBUG) {
-                Log.d(TAG, "[uploadBatches] " + res + " batches of " + copyFileList.size() + " uploaded successfully");
+                Log.d(TAG, "[uploadBatches] File " + fileName + " uploaded with status " + uploadCacheTask.getStatus());
             }
-        }
 
-        return res;
+        } while (uploadCacheTask.getStatus() != UploadCacheTask.UploadStatus.NetworkError);
     }
 
 
     protected void uploadData() {
         ArrayList<String> uploadList;
         synchronized (mUploadList) {
-            if(mUploadList.size() == 0)
+            if(mUploadList.isEmpty())
                 return;
             uploadList = new ArrayList<String>(mUploadList);
         }
@@ -600,7 +598,7 @@ public class AppMetrTrackingManager {
     }
 
     private void uploadCacheDeferred() {
-        if(mFileList.size() == 0)
+        if(mFileList.isEmpty())
             return;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             PersistableBundle extras = new PersistableBundle();

@@ -47,7 +47,12 @@ public class UploadService extends IntentService {
         LibraryPreferences preferences = new LibraryPreferences(getBaseContext());
         ArrayList<String> fileList = preferences.getFileList();
         UploadCacheTask uploadCacheTask = new UploadCacheTask(new ContextProxy(getBaseContext()), token);
-        uploadCacheTask.upload(fileList);
+        for(String fileName : fileList) {
+            uploadCacheTask.uploadFile(fileName);
+            // only if network error, we retry later
+            if(uploadCacheTask.getStatus() == UploadCacheTask.UploadStatus.NetworkError)
+                return;
+        }
     }
 
     private void executeWithWakeLock(Runnable runnable) {

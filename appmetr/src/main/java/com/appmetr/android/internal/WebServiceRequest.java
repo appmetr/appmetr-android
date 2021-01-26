@@ -42,10 +42,11 @@ public class WebServiceRequest {
      *         Else returns "false".
      */
     public boolean sendRequest(List<HttpNameValuePair> parameters, byte[] batches) throws IOException {
-        URL url = new URL(getUrlPath(parameters));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
+        HttpURLConnection connection = null;
         try {
+            URL url = new URL(getUrlPath(parameters));
+            connection = (HttpURLConnection) url.openConnection();
+
             // Add body data
             connection.setDoInput(true);
             connection.setDoOutput(true);
@@ -83,14 +84,10 @@ public class WebServiceRequest {
             }
         } catch (Exception error) {
             Log.e(TAG, "Server error", error);
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG,
-                        "Please, check rights for the app in AndroidManifest.xml."
-                                + " For the app to have access to the network the uses permission \"android.permission.INTERNET\" "
-                                + "must be set. You can find a detailed description here: http://developer.android.com/reference/android/Manifest.permission.html#INTERNET");
-            }
+            throw new IOException(error);
         } finally {
-            connection.disconnect();
+            if(connection != null)
+                connection.disconnect();
         }
 
         return false;
@@ -109,36 +106,5 @@ public class WebServiceRequest {
         }
 
         return mUrlPath + res;
-    }
-
-    public JSONObject sendRequest(List<HttpNameValuePair> parameters) throws IOException, JSONException, HttpException {
-        URL url = new URL(getUrlPath(parameters));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder result = new StringBuilder();
-            try {
-                String inputLine;
-                while ((inputLine = input.readLine()) != null) {
-                    result.append(inputLine);
-                }
-            } finally {
-                input.close();
-            }
-
-            if (connection.getResponseCode() >= 400) {
-                throw new HttpException("Invalid response code: " + connection.getResponseCode());
-            }
-
-            if (!connection.getContentType().contains("application/json")) {
-                throw new HttpException("Invalid content type: " + connection.getContentType());
-            }
-
-            return new JSONObject(result.toString());
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
     }
 }

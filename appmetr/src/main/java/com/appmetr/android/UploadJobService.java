@@ -61,8 +61,12 @@ public final class UploadJobService extends JobService {
         LibraryPreferences preferences = new LibraryPreferences(getBaseContext());
         ArrayList<String> fileList = preferences.getFileList();
         UploadCacheTask uploadCacheTask = new UploadCacheTask(new ContextProxy(getBaseContext()), token);
-        uploadCacheTask.upload(fileList);
-        // only if network error, we retry later
-        return uploadCacheTask.getStatus() != UploadCacheTask.UploadStatus.NetworkError;
+        for(String fileName : fileList) {
+            uploadCacheTask.uploadFile(fileName);
+            // only if network error, we retry later
+            if(uploadCacheTask.getStatus() == UploadCacheTask.UploadStatus.NetworkError)
+                return false;
+        }
+        return true;
     }
 }
