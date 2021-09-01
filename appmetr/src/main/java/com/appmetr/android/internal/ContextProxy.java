@@ -8,10 +8,12 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import com.appmetr.android.BuildConfig;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -86,7 +88,7 @@ public class ContextProxy {
     }
 
     /**
-     * Private method which returns content of file with filename.
+     * Public method which returns content of file with filename.
      *
      * @param fileName file name.
      * @return content of file.
@@ -100,6 +102,16 @@ public class ContextProxy {
         inputFile.close();
 
         return streamBuffer;
+    }
+
+    /**
+     * This method returns File reference to root storage for current device
+     * @param context context
+     * @return file reference to root storage
+     */
+    public File getDefaultStorage() {
+        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) ?
+                getContext().getExternalFilesDir(null) : getContext().getFilesDir();
     }
 
     private String getWebServiceUrl(Context context) {
