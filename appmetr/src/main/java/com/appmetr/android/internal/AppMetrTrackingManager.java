@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PersistableBundle;
+import android.os.storage.StorageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -25,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -302,6 +304,9 @@ public class AppMetrTrackingManager {
             if(properties == null) {
                 properties = new JSONObject();
             }
+            File storage = mContextProxy.getDefaultStorage();
+            properties.put("$diskTotal", storage.getTotalSpace());
+            properties.put("$diskFree", storage.getUsableSpace());
 
             long duration = mPreferences.getSessionDuration() / 1000;
             mPreferences.setSessionDuration(0);
