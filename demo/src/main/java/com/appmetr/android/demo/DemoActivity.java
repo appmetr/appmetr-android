@@ -79,7 +79,7 @@ public class DemoActivity extends TabActivity {
     }
 
     private void initializeAppMetr() throws DataFormatException {
-        AppMetr.setup(token, this);
+        AppMetr.setup(token, null, this);
     }
 
     public void logMessage(String message) {

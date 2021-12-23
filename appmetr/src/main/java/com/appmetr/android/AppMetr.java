@@ -56,11 +56,11 @@ public class AppMetr extends AppMetrTrackingManager {
         super(context);
     }
 
-    public static void setup(String token, Activity activity) throws DataFormatException, SecurityException {
+    public static void setup(String token, String macAddress, Activity activity) throws DataFormatException, SecurityException {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "#setup from activity");
         }
-        setup(token, activity.getApplicationContext());
+        setup(token, macAddress, activity.getApplicationContext());
         trackLaunchIntent(activity);
     }
 
@@ -72,7 +72,7 @@ public class AppMetr extends AppMetrTrackingManager {
      * @param context  The application context to initialize AppMetr library
      * @throws DataFormatException - library throws exception if token is not valid
      */
-    public static void setup(String token, Context context) throws DataFormatException, SecurityException {
+    public static void setup(String token, String macAddress, Context context) throws DataFormatException, SecurityException {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "#setup");
         }
@@ -82,7 +82,7 @@ public class AppMetr extends AppMetrTrackingManager {
 
         if (msInstance == null) {
             msInstance = new AppMetr(context);
-            msInstance.initialize(token);
+            msInstance.initialize(token, macAddress);
         } else if (BuildConfig.DEBUG) {
             Log.d(TAG, "setup failed. Library already initialized.");
         }

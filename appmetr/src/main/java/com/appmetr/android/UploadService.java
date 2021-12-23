@@ -21,6 +21,7 @@ import java.util.ArrayList;
 public class UploadService extends IntentService {
     public static final String ACTION_APPMETR_UPLOAD = "com.appmetr.actions.ACTION_UPLOAD";
     public static final String EXTRA_PARAMS_TOKEN = "appmetrToken";
+    public static final String EXTRA_PARAMS_MACADDRESS = "appmetrMacAddress";
 
     public UploadService() {
         super("AppmetrUploadService");
@@ -31,11 +32,12 @@ public class UploadService extends IntentService {
         if (intent != null) {
             if (ACTION_APPMETR_UPLOAD.equals(intent.getAction())) {
                 final String token = intent.getStringExtra(EXTRA_PARAMS_TOKEN);
+                final String macAddress = intent.getStringExtra(EXTRA_PARAMS_MACADDRESS);
                 if (!TextUtils.isEmpty(token)) {
                     executeWithWakeLock(new Runnable() {
                         @Override
                         public void run() {
-                            uploadImpl(token);
+                            uploadImpl(token, macAddress);
                         }
                     });
                 }
@@ -43,10 +45,10 @@ public class UploadService extends IntentService {
         }
     }
 
-    private void uploadImpl(String token) {
+    private void uploadImpl(String token, String macAddress) {
         LibraryPreferences preferences = new LibraryPreferences(getBaseContext());
         ArrayList<String> fileList = preferences.getFileList();
-        UploadCacheTask uploadCacheTask = new UploadCacheTask(new ContextProxy(getBaseContext()), token);
+        UploadCacheTask uploadCacheTask = new UploadCacheTask(new ContextProxy(getBaseContext()), token, macAddress);
         uploadCacheTask.upload(fileList);
     }
 
