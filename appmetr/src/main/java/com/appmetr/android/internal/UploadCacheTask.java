@@ -33,8 +33,8 @@ public class UploadCacheTask  {
     private RequestParameters mRequestParameters;
     private UploadStatus mStatus = UploadStatus.None;
 
-    public UploadCacheTask(ContextProxy contextProxy, String token) {
-        this(contextProxy, new WebServiceRequest(contextProxy.webServiceUrl), new RequestParameters(contextProxy.getContext(), token));
+    public UploadCacheTask(ContextProxy contextProxy, String token, String macAddress) {
+        this(contextProxy, new WebServiceRequest(contextProxy.webServiceUrl), new RequestParameters(contextProxy.getContext(), token, macAddress));
     }
 
     public UploadCacheTask(ContextProxy contextProxy, WebServiceRequest webServiceRequest, RequestParameters requestParameters) {

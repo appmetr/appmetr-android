@@ -148,7 +148,7 @@ public class AppMetrTrackingManager {
      * @param token - parameter which is needed for data upload.
      * @throws DataFormatException - library throws exception if token is not valid
      */
-    protected void initialize(String token) throws DataFormatException, SecurityException {
+    protected void initialize(String token, String macAddress) throws DataFormatException, SecurityException {
         String wesServiceUrl = mContextProxy.webServiceUrl;
 
         if (BuildConfig.DEBUG) {
@@ -161,7 +161,7 @@ public class AppMetrTrackingManager {
             throw new DataFormatException("Not valid token!");
         }
 
-        mRequestParameters = new RequestParameters(mContextProxy.getContext(), token);
+        mRequestParameters = new RequestParameters(mContextProxy.getContext(), token, macAddress);
 
         mStartLock.lock();
         if (!mStarted) {
@@ -599,6 +599,7 @@ public class AppMetrTrackingManager {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             PersistableBundle extras = new PersistableBundle();
             extras.putString(UploadService.EXTRA_PARAMS_TOKEN, mRequestParameters.getToken());
+            extras.putString(UploadService.EXTRA_PARAMS_MACADDRESS, mRequestParameters.getMacAddress());
             JobInfo jobInfo = new JobInfo.Builder(UPLOAD_JOB_ID, new ComponentName(mContextProxy.getContext(), UploadJobService.class))
                     .setExtras(extras)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
@@ -613,6 +614,7 @@ public class AppMetrTrackingManager {
             Intent intent = new Intent(mContextProxy.getContext(), UploadService.class);
             intent.setAction(UploadService.ACTION_APPMETR_UPLOAD);
             intent.putExtra(UploadService.EXTRA_PARAMS_TOKEN, mRequestParameters.getToken());
+            intent.putExtra(UploadService.EXTRA_PARAMS_MACADDRESS, mRequestParameters.getMacAddress());
             mContextProxy.getContext().startService(intent);
         }
     }

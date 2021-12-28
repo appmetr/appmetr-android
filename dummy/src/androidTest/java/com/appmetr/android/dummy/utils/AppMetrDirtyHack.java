@@ -39,7 +39,7 @@ public class AppMetrDirtyHack extends AppMetr {
     }
 
     public void initialize(String token) throws DataFormatException {
-        super.initialize(token);
+        super.initialize(token, null);
     }
 
     public static void dirtyDestroySingletonInstance() {

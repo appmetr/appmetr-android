@@ -27,12 +27,13 @@ public final class UploadJobService extends JobService {
     public boolean onStartJob(final JobParameters params) {
         if (params.getExtras().containsKey(UploadService.EXTRA_PARAMS_TOKEN)) {
             String token = params.getExtras().getString(UploadService.EXTRA_PARAMS_TOKEN);
+            String macAddress = params.getExtras().getString(UploadService.EXTRA_PARAMS_MACADDRESS);
             if (!TextUtils.isEmpty(token)) {
                 uploadTask = new AsyncTask<String, Void, Boolean>() {
 
                     @Override
                     protected Boolean doInBackground(String... tokens) {
-                        return uploadImpl(tokens[0]);
+                        return uploadImpl(tokens[0], tokens[1]);
                     }
 
                     @Override
@@ -41,7 +42,7 @@ public final class UploadJobService extends JobService {
                         uploadTask = null;
                     }
                 };
-                uploadTask.execute(token);
+                uploadTask.execute(token, macAddress);
                 return true;
             }
         }
@@ -57,10 +58,10 @@ public final class UploadJobService extends JobService {
         return false;
     }
 
-    private boolean uploadImpl(String token) {
+    private boolean uploadImpl(String token, String macAddress) {
         LibraryPreferences preferences = new LibraryPreferences(getBaseContext());
         ArrayList<String> fileList = preferences.getFileList();
-        UploadCacheTask uploadCacheTask = new UploadCacheTask(new ContextProxy(getBaseContext()), token);
+        UploadCacheTask uploadCacheTask = new UploadCacheTask(new ContextProxy(getBaseContext()), token, macAddress);
         uploadCacheTask.upload(fileList);
         // only if network error, we retry later
         return uploadCacheTask.getStatus() != UploadCacheTask.UploadStatus.NetworkError;
