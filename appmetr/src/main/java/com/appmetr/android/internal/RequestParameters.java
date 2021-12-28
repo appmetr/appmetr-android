@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.appmetr.android.BuildConfig;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
@@ -47,7 +48,7 @@ public class RequestParameters {
     /**
      * Retrieve request parameters from context
      */
-    public RequestParameters(@NonNull final Context context, @NonNull String token, String macAddress) {
+    public RequestParameters(@NonNull final Context context, @NonNull String token, @Nullable String macAddress) {
         this.token = token;
         this.macAddress = macAddress;
         deviceId = getDeviceID(context);
@@ -78,8 +79,8 @@ public class RequestParameters {
         List<HttpNameValuePair> nameValuePairs = new ArrayList<HttpNameValuePair>();
         nameValuePairs.add(new HttpNameValuePair("token", getToken().toLowerCase(Locale.US)));
         nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
-        if (macAddress != null && !macAddress.isEmpty()) {
-            nameValuePairs.add(new HttpNameValuePair("mobMac", macAddress));
+        if (!TextUtils.isEmpty(macAddress)) {
+            nameValuePairs.add(new HttpNameValuePair("mobMac", getHash(macAddress)));
         }
         nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getHash(getDeviceID(context))));
         nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getHash(getAndroidID(context))));
@@ -128,7 +129,7 @@ public class RequestParameters {
             }
         }
 
-        if (macAddress != null && !macAddress.isEmpty()) {
+        if (TextUtils.isEmpty(macAddress)) {
             ret.add(new HttpNameValuePair("mobMac", macAddress));
         }
 
