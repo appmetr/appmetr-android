@@ -6,8 +6,6 @@ package com.appmetr.android.internal;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.Settings;
@@ -38,8 +36,6 @@ public class RequestParameters {
     private static final String MAGIC_ANDROID_ID = "9774d56d682e549c";
     private static String googleAid = null;
     private static String fireOsId = null;
-
-    private final String macAddress;
     private final String deviceId;
     private final String buildSerial;
     private final String androidId;
@@ -51,7 +47,6 @@ public class RequestParameters {
      */
     public RequestParameters(@NonNull final Context context, @NonNull String token) {
         this.token = token;
-        macAddress = getMacAddress(context);
         deviceId = getDeviceID(context);
         buildSerial = getBuildSerial();
         androidId = getAndroidID(context);
@@ -76,7 +71,6 @@ public class RequestParameters {
         List<HttpNameValuePair> nameValuePairs = new ArrayList<HttpNameValuePair>();
         nameValuePairs.add(new HttpNameValuePair("token", getToken().toLowerCase(Locale.US)));
         nameValuePairs.add(new HttpNameValuePair("mobDeviceType", getDeviceType()));
-        nameValuePairs.add(new HttpNameValuePair("mobMac", getHash(getMacAddress(context))));
         nameValuePairs.add(new HttpNameValuePair("mobTmDevId", getHash(getDeviceID(context))));
         nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getHash(getAndroidID(context))));
         nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getHash(googleAid)));
@@ -124,10 +118,6 @@ public class RequestParameters {
             }
         }
 
-        if (macAddress != null) {
-            ret.add(new HttpNameValuePair("mobMac", macAddress));
-        }
-
         if (buildSerial != null) {
             ret.add(new HttpNameValuePair("mobBuildSerial", buildSerial));
         }
@@ -141,27 +131,6 @@ public class RequestParameters {
 
     private static String getDeviceType() {
         return Build.MANUFACTURER + "," + Build.MODEL;
-    }
-
-    private static String getMacAddress(Context context) {
-        String ret = null;
-        try {
-            WifiManager wifiMgr = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifiMgr != null) {
-                WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
-                if (wifiInfo != null) {
-                    ret = wifiInfo.getMacAddress();
-                    if (ret != null) {
-                        ret = ret.replaceAll("\\W", "").toUpperCase(Locale.US);
-                    }
-                }
-            }
-        } catch (final Throwable t) {
-            if (BuildConfig.DEBUG) {
-                Log.w(TAG, "Failed to retrieve wifi MAC address: " + t.getMessage());
-            }
-        }
-        return ret;
     }
 
     @SuppressLint("MissingPermission")
@@ -225,8 +194,6 @@ public class RequestParameters {
         if (ret == null || ret.length() == 0 || ret.equals(MAGIC_ANDROID_ID)) {
             if (deviceId != null) {
                 ret = deviceId;
-            } else if (macAddress != null) {
-                ret = macAddress;
             }
         }
 
