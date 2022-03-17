@@ -17,6 +17,12 @@ import androidx.annotation.NonNull;
 
 import com.appmetr.android.BuildConfig;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.google.android.gms.appset.AppSet;
+import com.google.android.gms.appset.AppSetIdClient;
+import com.google.android.gms.appset.AppSetIdInfo;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -36,6 +42,7 @@ public class RequestParameters {
     private static final String MAGIC_ANDROID_ID = "9774d56d682e549c";
     private static String googleAid = null;
     private static String fireOsId = null;
+    private static String appSetId;
     private final String deviceId;
     private final String buildSerial;
     private final String androidId;
@@ -51,6 +58,7 @@ public class RequestParameters {
         buildSerial = getBuildSerial();
         androidId = getAndroidID(context);
         userId = getUserID();
+        getAppSetId(context);
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -75,6 +83,7 @@ public class RequestParameters {
         nameValuePairs.add(new HttpNameValuePair("mobAndroidID", getHash(getAndroidID(context))));
         nameValuePairs.add(new HttpNameValuePair("mobGoogleAid", getHash(googleAid)));
                                                 // use googleAid only if we already have it
+        nameValuePairs.add(new HttpNameValuePair("mobAppSetId", getHash(appSetId)));
         nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getHash(getFireOsId(context))));
         StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : nameValuePairs) {
@@ -107,6 +116,7 @@ public class RequestParameters {
         ret.add(new HttpNameValuePair("mobLibVer", LibraryPreferences.VERSION_STRING));
         ret.add(new HttpNameValuePair("mobAndroidID", androidId));
 
+
         String aid = getGoogleId(context);
         if (!TextUtils.isEmpty(aid)) {
             ret.add(new HttpNameValuePair("mobGoogleAid", aid));
@@ -116,6 +126,10 @@ public class RequestParameters {
             if (!TextUtils.isEmpty(aid)) {
                 ret.add(new HttpNameValuePair("mobFireOsAid", aid));
             }
+        }
+
+        if (!TextUtils.isEmpty(appSetId)) {
+            ret.add(new HttpNameValuePair("mobAppSetId", appSetId));
         }
 
         if (buildSerial != null) {
@@ -247,6 +261,41 @@ public class RequestParameters {
             }
         }
         return fireOsId;
+    }
+
+    /**
+     * Set Google App set ID if it preset
+     * If operation failed, returns empty string,
+     * doesn't return null in any situation.
+     * Call it only in background thread!
+     *
+     * @param context Current context
+     */
+    private static void getAppSetId(Context context) {
+        if (appSetId == null) {
+            try {
+                AppSetIdClient client = AppSet.getClient(context);
+                Task<AppSetIdInfo> task = client.getAppSetIdInfo();
+
+                task.addOnSuccessListener(new OnSuccessListener<AppSetIdInfo>() {
+                    @Override
+                    public void onSuccess(AppSetIdInfo appSetIdInfo) {
+                        appSetId = appSetIdInfo.getId();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Failed to retrieve APP_SET_ID", e);
+                        appSetId = "";
+                    }
+                });
+            } catch (Throwable t) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Failed to retrieve APP_SET_ID", t);
+                }
+                appSetId = "";
+            }
+        }
     }
 
     private static String getHash(String data) {
