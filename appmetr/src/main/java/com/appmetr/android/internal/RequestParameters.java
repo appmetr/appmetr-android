@@ -280,17 +280,15 @@ public class RequestParameters {
                 task.addOnSuccessListener(new OnSuccessListener<AppSetIdInfo>() {
                     @Override
                     public void onSuccess(AppSetIdInfo appSetIdInfo) {
-                        int scope = appSetIdInfo.getScope();
                         appSetId = appSetIdInfo.getId();
                     }
-                })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.e(TAG, "Failed to retrieve APP_SET_ID", e);
-                                appSetId = "";
-                            }
-                        });
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Failed to retrieve APP_SET_ID", e);
+                        appSetId = "";
+                    }
+                });
             } catch (Throwable t) {
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "Failed to retrieve APP_SET_ID", t);
