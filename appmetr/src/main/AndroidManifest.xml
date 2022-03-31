@@ -14,6 +14,8 @@
         <service
             android:name=".UploadService"
             android:exported="false"/>
+
+        <meta-data android:name="appmetrBatchSubfolder" android:value=""/>
     </application>
 
 </manifest>
