@@ -2,9 +2,10 @@ package com.appmetr.android.integration;
 
 import android.util.Log;
 import com.appmetr.android.AppMetr;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import androidx.annotation.NonNull;
 
 public class AppMetrHelper {
     private static final String TAG = "AppMetrHelper";
@@ -182,6 +183,18 @@ public class AppMetrHelper {
             Log.e(TAG, "getDeviceKey failed", error);
         }
         return null;
+    }
+
+    /**
+     * Method for setting fbcloud Id
+     * @param fbCloudId - unique user identifier
+     */
+    public static void SetFbCloudId(@NonNull String fbCloudId) {
+        try {
+            AppMetr.getInstance().SetFbCloudId(fbCloudId);
+        } catch(final Throwable error) {
+            Log.e(TAG, "SetFbCloudId failed", error);
+        }
     }
 
     /**

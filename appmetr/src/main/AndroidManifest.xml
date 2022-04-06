@@ -15,7 +15,8 @@
             android:name=".UploadService"
             android:exported="false"/>
 
-        <meta-data android:name="appmetrBatchSubfolder" android:value=""/>
+        <meta-data android:name="appmetrSubfolder" android:value=""/>
+        <meta-data android:name="appmetrFbCloudSupport" android:value="false"/>
     </application>
 
 </manifest>

@@ -10,10 +10,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PersistableBundle;
-import android.os.storage.StorageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.appmetr.android.AppMetr;
@@ -289,6 +289,16 @@ public class AppMetrTrackingManager {
         if(mRequestParameters == null)
             throw new IllegalStateException("Call initialize() first");
         return mRequestParameters.getDeviceKey(mContextProxy.getContext());
+    }
+
+    /**
+     * Public method for setting fbCloudId(user id)
+     * @param fbCloudId - String fbCloud user identifier
+     */
+    public void SetFbCloudId(@NonNull String fbCloudId) {
+        if(mRequestParameters == null)
+            throw new IllegalStateException("Call initialize() first");
+        mRequestParameters.SetFbCloudId(fbCloudId);
     }
 
     /**

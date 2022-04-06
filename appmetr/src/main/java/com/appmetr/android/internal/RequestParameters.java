@@ -6,6 +6,7 @@ package com.appmetr.android.internal;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.Settings;
@@ -24,11 +25,14 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Parameters, passed to http request on events upload
@@ -40,14 +44,19 @@ public class RequestParameters {
      * This device ID appearing in ALL Droid 2 devices, and other Froyo builds
      */
     private static final String MAGIC_ANDROID_ID = "9774d56d682e549c";
+    private static final String FBCLOUD_UDID_FILE = "fbcloud_udid";
     private static String googleAid = null;
     private static String fireOsId = null;
     private static String appSetId;
+    private static String fbCloudOpenUDID;
     private final String deviceId;
     private final String buildSerial;
     private final String androidId;
     private final String userId;
     private final String token;
+
+
+    private String fbCloudId;
 
     /**
      * Retrieve request parameters from context
@@ -65,6 +74,12 @@ public class RequestParameters {
                 googleAid = getGoogleId(context);
             }
         });
+
+        fbCloudOpenUDID = getFbCloudOpenUDID(context);
+    }
+
+    public void SetFbCloudId(@NonNull String _fbCloudId) {
+        fbCloudId = _fbCloudId;
     }
 
     public String getToken() {
@@ -85,6 +100,8 @@ public class RequestParameters {
                                                 // use googleAid only if we already have it
         nameValuePairs.add(new HttpNameValuePair("mobAppSetId", getHash(appSetId)));
         nameValuePairs.add(new HttpNameValuePair("mobFireOsAid", getHash(getFireOsId(context))));
+        nameValuePairs.add(new HttpNameValuePair("mobFbCloudId", getHash(fbCloudId)));
+        nameValuePairs.add(new HttpNameValuePair("mobFbCloudOpenUDID", getHash(getFbCloudOpenUDID(context))));
         StringBuilder res = new StringBuilder();
         for (HttpNameValuePair pair : nameValuePairs) {
             if(TextUtils.isEmpty(pair.getValue()))
@@ -138,6 +155,14 @@ public class RequestParameters {
 
         if (deviceId != null) {
             ret.add(new HttpNameValuePair("mobTmDevId", deviceId));
+        }
+
+        if (!TextUtils.isEmpty(fbCloudId)) {
+            ret.add(new HttpNameValuePair("mobAndroidID", fbCloudId));
+        }
+
+        if (!TextUtils.isEmpty(fbCloudOpenUDID)) {
+            ret.add(new HttpNameValuePair("mobFbCloudOpenUDID", fbCloudOpenUDID));
         }
 
         return ret;
@@ -296,6 +321,43 @@ public class RequestParameters {
                 appSetId = "";
             }
         }
+    }
+
+    private static String getFbCloudOpenUDID(@NonNull final Context context) {
+        final String charsetEncoding = "UTF-8";
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        boolean fbCloudSupport = appInfo.metaData.getBoolean("appmetrFbCloudSupport");
+        if (fbCloudSupport) {
+            try {
+                FileInputStream fileInputStream = Utils.getFileInputStream(context, FBCLOUD_UDID_FILE);
+                int size = fileInputStream.available();
+                byte[] buffer = new byte[size];
+                fileInputStream.read(buffer);
+                fbCloudOpenUDID = new String(buffer, charsetEncoding);
+
+                fileInputStream.close();
+            }
+            catch (Exception e) {
+                Log.e(TAG, "Failed to get mobFbCloudOpenUDID", e);
+                fbCloudOpenUDID = "";
+            }
+
+            if (TextUtils.isEmpty(fbCloudOpenUDID)) {
+                try {
+                    String guid = UUID.randomUUID().toString();
+                    FileOutputStream fileOutputStream = Utils.getFileOutputStream(context, FBCLOUD_UDID_FILE);
+                    fileOutputStream.write(guid.getBytes(charsetEncoding));
+                    fbCloudOpenUDID = guid;
+                    fileOutputStream.close();
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "Failed to set mobFbCloudOpenUDID", e);
+                    fbCloudOpenUDID = "";
+                }
+            }
+        }
+
+        return fbCloudOpenUDID;
     }
 
     private static String getHash(String data) {

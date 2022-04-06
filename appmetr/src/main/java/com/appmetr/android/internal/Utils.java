@@ -4,21 +4,25 @@
  */
 package com.appmetr.android.internal;
 
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.text.TextUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Formatter;
 import java.util.Iterator;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
+
+import androidx.annotation.NonNull;
 
 /**
  * Utility class for AppMetr
@@ -93,5 +97,37 @@ public class Utils {
         byte[] result = new byte[length];
         System.arraycopy(buffer, 0, result, 0, length);
         return result;
+    }
+
+    public static FileOutputStream getFileOutputStream(@NonNull final Context context, String fileName) throws FileNotFoundException {
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        String batchSubfolder = appInfo.metaData.getString("appmetrSubfolder");
+        File dir;
+        if (!TextUtils.isEmpty(batchSubfolder)) {
+            dir = new File(context.getFilesDir(), batchSubfolder);
+
+            dir.mkdirs();
+        }
+        else {
+            dir = new File(context.getFilesDir().getPath());
+        }
+
+        return new FileOutputStream(new File(dir, fileName));
+    }
+
+    public static FileInputStream getFileInputStream(@NonNull final Context context, String fileName) throws FileNotFoundException {
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        String batchSubfolder = appInfo.metaData.getString("appmetrSubfolder");
+        File dir;
+        if (!TextUtils.isEmpty(batchSubfolder)) {
+            dir = new File(context.getFilesDir(), batchSubfolder);
+
+            dir.mkdirs();
+        }
+        else {
+            dir = new File(context.getFilesDir().getPath());
+        }
+
+        return new FileInputStream(new File(dir, fileName));
     }
 }

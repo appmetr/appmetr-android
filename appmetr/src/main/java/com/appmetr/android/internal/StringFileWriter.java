@@ -5,10 +5,7 @@
 package com.appmetr.android.internal;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.text.TextUtils;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.Deflater;
@@ -33,20 +30,8 @@ public class StringFileWriter {
      * @throws IOException
      */
     public StringFileWriter(Context context, int fileIndex) throws IOException {
-        ApplicationInfo appInfo = context.getApplicationInfo();
-        String batchSubfolder = appInfo.metaData.getString("appmetrBatchSubfolder");
         mFileName = "batch" + fileIndex;
-        FileOutputStream fileOutput;
-        if (!TextUtils.isEmpty(batchSubfolder)) {
-            File dir=new File(context.getFilesDir(), batchSubfolder);
-
-            dir.mkdirs();
-
-            fileOutput = new FileOutputStream(new File(dir, mFileName));
-        }
-        else {
-            fileOutput = context.openFileOutput(mFileName, Context.MODE_PRIVATE);
-        }
+        FileOutputStream fileOutput = Utils.getFileOutputStream(context, mFileName);
 
         mOutputStream = new DeflaterOutputStream(fileOutput, new Deflater(Deflater.BEST_COMPRESSION, true));
         mOutputStream.write(BATCH_OPENING.getBytes(), 0, BATCH_OPENING.length());
